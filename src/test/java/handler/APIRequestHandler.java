@@ -17,12 +17,12 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.jayway.restassured.response.ValidatableResponse;
 
-import config.GoogleAPIConfig;
+import config.CommonConfig;
 import config.TestConfig;
 import google.GoogleAPIService;
 import util.DataDriverModel;
 
-@ContextConfiguration(classes = { TestConfig.class, GoogleAPIConfig.class })
+@ContextConfiguration(classes = { TestConfig.class, CommonConfig.class })
 @TestPropertySource(locations = { "classpath:spreadsheet-${spreadsheet:default}.properties" })
 public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 	

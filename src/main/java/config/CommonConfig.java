@@ -6,8 +6,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 @Configuration
-@PropertySource(value = "classpath:GoogleOath2.properties")
-public class GoogleAPIConfig {
+@PropertySource(value = "classpath:common.properties")
+public class CommonConfig {
 
 	@Autowired
 	ConfigurableEnvironment env;
