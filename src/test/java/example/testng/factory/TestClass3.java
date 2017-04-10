@@ -1,4 +1,4 @@
-package testng.factory;
+package example.testng.factory;
 
 import org.testng.annotations.Test;
 

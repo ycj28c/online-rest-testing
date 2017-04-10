@@ -1,4 +1,4 @@
-package google;
+package handler;
 
 import static com.jayway.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -18,31 +19,23 @@ import com.jayway.restassured.response.ValidatableResponse;
 
 import config.GoogleAPIConfig;
 import config.TestConfig;
+import google.GoogleAPIService;
 import util.DataDriverModel;
 
-//@Configuration
-//@PropertySource(value = "classpath:googleapi.properties")
 @ContextConfiguration(classes = { TestConfig.class, GoogleAPIConfig.class })
-public class ZooGoogleDataProvider extends AbstractTestNGSpringContextTests{
+@TestPropertySource(locations = { "classpath:spreadsheet-${spreadsheet:default}.properties" })
+public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 	
 	@Autowired
 	protected Environment env;
 	
 	@DataProvider
 	public Object[][] dp() throws Exception{
-//		return new Object[][] {
-//			{new DataDriverModel("1","test zoos","test zoos api","http://54.219.154.2:8080/zoos","GET","","status","200")},
-//			{new DataDriverModel("1","test zoos id","test zoos api id","http://54.219.154.2:8080/zoos/1","GET","","status","200")}
-//		};
-		
 		GoogleAPIService gas = new GoogleAPIService();
 		Sheets service = gas.getSheetsService(env.getProperty("CLIENT_SECRET_PATH"));
 		String spreadsheetId = env.getProperty("SPREADSHEET_ID");
 		String range = env.getProperty("SHEET_NAME")+"!"+env.getProperty("VALUE_RANGE");
 		
-//		Sheets service = Quickstart.getSheetsService();
-//      String spreadsheetId = "1wrw6XHq6zyV0mSNB7skLdaLObo75Nlmo2FKRoSprcGo";
-//      String range = "zoos!A2:H";
         ValueRange response = service.spreadsheets().values()
             .get(spreadsheetId, range)
             .execute();
@@ -65,37 +58,16 @@ public class ZooGoogleDataProvider extends AbstractTestNGSpringContextTests{
         		
         		System.out.println("ddm data:" + ddm.toString());
         		obj[i][0] = ddm;
-//        		StringBuilder sb = new StringBuilder();
-//        		for(int j=0;j<values.get(i).size();j++){
-//        			sb.append(values.get(i).get(j) + ",");
-//        		}
-//				System.out.println("Row " + i + ":" + sb.toString());
-//        		System.out.println("=========================================");
         	}
         }
-        
         return obj;
-		
 	}
 
 	@Test(dataProvider = "dp")
 	public void testZoos(DataDriverModel ddm) {
-//		Pharser(ddm.getRequestMethod())
-	
-		
 		ValidatableResponse rs = null;
-		//Response rs = when().get(ddm.getRequestUrl());
 		rs = when().get(ddm.getRequestUrl()).then();
 		exectuteRequestMethod(ddm, rs);
-//		rs = rs.statusCode(Integer.valueOf(ddm.getValidation()));
-//		rs = rs.body("1.name", equalTo("Atascadero Charles Paddock Zoo"));
-		
-//		when()
-//			.get(ddm.getRequestUrl())
-//		.then()
-//			.statusCode(Integer.valueOf(ddm.getValidation()))
-//		.and()
-//			.body("1.name", equalTo("Atascadero Charles Paddock Zoo"));
 	}
 
 	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, ValidatableResponse rs) {
@@ -113,9 +85,5 @@ public class ZooGoogleDataProvider extends AbstractTestNGSpringContextTests{
 			return rs;
 		}
 	}
-
-//	public static void main(String[] args) {
-//		// TODO Auto-generated method stub
-//	}
 
 }

@@ -1,4 +1,4 @@
-package restassured;
+package example.restassured;
 
 import static com.jayway.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.equalTo;

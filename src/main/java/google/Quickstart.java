@@ -1,4 +1,5 @@
 package google;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
@@ -18,21 +19,14 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
-/**
- * Oauth2 connection example
- * https://developers.google.com/sheets/api/quickstart/java 
- *
- */
 public class Quickstart {
     /** Application name. */
     private static final String APPLICATION_NAME =
-        "Google Sheets API";
+        "Google Sheets API Java Quickstart";
 
     /** Directory to store user credentials for this application. */
-//    private static final java.io.File DATA_STORE_DIR = new java.io.File(
-//        System.getProperty("user.home"), ".credentials/sheets.googleapis.com");
     private static final java.io.File DATA_STORE_DIR = new java.io.File(
-          System.getProperty("user.home"), ".credentials/sheets.googleapis.com-java-quickstart");
+        System.getProperty("user.home"), ".credentials/sheets.googleapis.com-java-quickstart");
 
     /** Global instance of the {@link FileDataStoreFactory}. */
     private static FileDataStoreFactory DATA_STORE_FACTORY;
@@ -100,15 +94,14 @@ public class Quickstart {
                 .build();
     }
 
-    public static void main(String[] args){
-    	try{
+    public static void main(String[] args) throws Exception {
         // Build a new authorized API client service.
         Sheets service = getSheetsService();
 
         // Prints the names and majors of students in a sample spreadsheet:
         // https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-        String spreadsheetId = "1wrw6XHq6zyV0mSNB7skLdaLObo75Nlmo2FKRoSprcGo";
-        String range = "zoos!A1:H3";
+        String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
+        String range = "Class Data!A2:E";
         ValueRange response = service.spreadsheets().values()
             .get(spreadsheetId, range)
             .execute();
@@ -116,21 +109,12 @@ public class Quickstart {
         if (values == null || values.size() == 0) {
             System.out.println("No data found.");
         } else {
-//          System.out.println("Name, Major");
-//          for (List row : values) {
-//            // Print columns A and E, which correspond to indices 0 and 4.
-//            System.out.printf("%s, %s\n", row.get(0), row.get(4));
-//          }
-        	for(int i=0;i<values.size();i++){
-        		StringBuilder sb = new StringBuilder();
-        		for(int j=0;j<values.get(i).size();j++){
-        			sb.append(values.get(i).get(j) + ",");
-        		}
-				System.out.println("Row " + i + ":" + sb.toString());
-        		System.out.println("=========================================");
-        	}
+          System.out.println("Name, Major");
+          for (List<?> row : values) {
+            // Print columns A and E, which correspond to indices 0 and 4.
+            System.out.printf("%s, %s\n", row.get(0), row.get(4));
+          }
         }
-    	}catch(Exception e){}
     }
 
 

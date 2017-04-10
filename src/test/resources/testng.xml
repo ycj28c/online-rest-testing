@@ -1,0 +1,7 @@
+<suite>
+	<test name="Compile">
+		<classes>
+			<class name="example.testng.dataprovider.DataProviderImplementITest" />
+		</classes>
+	</test>
+</suite>
