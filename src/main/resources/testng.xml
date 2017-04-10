@@ -1,0 +1,7 @@
+<suite>
+<test name="XML" >
+<classes>
+<class name="testng.factory.TestNGFactoryTest2" />
+</classes>
+</test>
+</suite>
