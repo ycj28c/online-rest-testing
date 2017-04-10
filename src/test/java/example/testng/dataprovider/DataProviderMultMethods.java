@@ -1,4 +1,4 @@
-package testng.dataprovider;
+package example.testng.dataprovider;
 
 import java.lang.reflect.Method;
 

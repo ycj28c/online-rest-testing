@@ -6,10 +6,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 @Configuration
-@PropertySource(value = "classpath:googleapi.properties")
-public class GoogleAPIConfig {
-
-//	private static final Logger log = LoggerFactory.getLogger(GoogleAPIConfig.class);
+@PropertySource(value = "classpath:common.properties")
+public class CommonConfig {
 
 	@Autowired
 	ConfigurableEnvironment env;
