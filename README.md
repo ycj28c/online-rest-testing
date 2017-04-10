@@ -1,4 +1,4 @@
-# online-rest-testing [![Build Status](https://travis-ci.org/ycj28c/online-rest-testing.svg?branch=github)](https://travis-ci.org/ycj28c/online-rest-testing)
+# online-rest-testing
 
 Working on it...
 
