@@ -14,10 +14,11 @@
 		<testng.version>6.10</testng.version>
 		<logback.version>1.2.1</logback.version>
 		<slf4j.version>1.7.23</slf4j.version>
+		<rest-assured.version>2.5.0</rest-assured.version>
 		<spring.framework.version>5.0.0.M4</spring.framework.version>
 		<maven.surefire.version>2.19.1</maven.surefire.version>
 	</properties>
-	
+
 	<repositories>
 		<!-- For testing against latest Spring snapshots -->
 		<repository>
@@ -51,7 +52,7 @@
 		<dependency>
 			<groupId>com.jayway.restassured</groupId>
 			<artifactId>rest-assured</artifactId>
-			<version>2.5.0</version>
+			<version>${rest-assured.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -123,14 +124,18 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.source}</target>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven.surefire.version}</version>
+				<configuration>
+					<!-- specify to run by APIRequestHandler class -->
+					<test>APIRequestHandler</test>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
