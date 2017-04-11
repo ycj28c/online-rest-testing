@@ -11,8 +11,8 @@ public class DataDriverModel {
 	
 	public DataDriverModel(){}
 
-	public DataDriverModel(String id, String name, String description, String requestUrl, String requestMethod,
-			String payload, String action, String validation) {
+	public DataDriverModel(Integer id, String name, String description, String requestUrl, String requestMethod,
+			String payload, String action, Object validation) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -24,11 +24,11 @@ public class DataDriverModel {
 		this.validation = validation;
 	}
 
-	public String getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -80,20 +80,20 @@ public class DataDriverModel {
 		this.action = action;
 	}
 
-	public String getValidation() {
+	public Object getValidation() {
 		return validation;
 	}
 
-	public void setValidation(String validation) {
+	public void setValidation(Object validation) {
 		this.validation = validation;
 	}
 
-	String id;
+	Integer id;
 	String name;
 	String description;
 	String requestUrl;
 	String requestMethod;
 	String payload;
 	String action;
-	String validation;
+	Object validation;
 }

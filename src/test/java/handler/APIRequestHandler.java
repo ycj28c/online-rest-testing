@@ -10,11 +10,13 @@ import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
 
 import config.CommonConfig;
@@ -47,14 +49,14 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
         } else {
         	for(int i=0;i<values.size();i++){
         		DataDriverModel ddm = new DataDriverModel();
-        		ddm.setId((String)values.get(i).get(0));
+        		ddm.setId((Integer)values.get(i).get(0));
         		ddm.setName((String)values.get(i).get(1));
         		ddm.setDescription((String)values.get(i).get(2));
         		ddm.setRequestUrl((String)values.get(i).get(3));
         		ddm.setRequestMethod((String)values.get(i).get(4));
         		ddm.setPayload((String)values.get(i).get(5));
         		ddm.setAction((String)values.get(i).get(6));
-        		ddm.setValidation((String)values.get(i).get(7));
+        		ddm.setValidation(values.get(i).get(7));
         		
         		System.out.println("ddm data:" + ddm.toString());
         		obj[i][0] = ddm;
@@ -64,21 +66,26 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 	}
 
 	@Test(dataProvider = "dp")
-	public void testZoos(DataDriverModel ddm) {
+	public void testAPICalls(DataDriverModel ddm) {
+		System.out.println(ddm.getId() + "." + ddm.getName() + ":" + ddm.getDescription() + "\n");
 		ValidatableResponse rs = null;
-		rs = when().get(ddm.getRequestUrl()).then();
-		exectuteRequestMethod(ddm, rs);
+		Response source = when().get(ddm.getRequestUrl());
+		rs = source.then();
+		exectuteRequestMethod(ddm, source, rs);
 	}
 
-	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, ValidatableResponse rs) {
-		if(ddm.getRequestMethod().equals("status")){
-			return rs.statusCode(Integer.valueOf(ddm.getValidation()));
-		} else if(ddm.getRequestMethod().equals("contains")){
-			String jsonPath = ddm.getRequestMethod().substring(ddm.getRequestMethod().indexOf("(\""), ddm.getRequestMethod().indexOf("\")"));
+	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, Response source, ValidatableResponse rs) {
+		if(ddm.getAction().contains("status")){
+			return rs.statusCode((Integer)ddm.getValidation());
+		} else if(ddm.getAction().substring(ddm.getAction().length()-".contains".length()).equalsIgnoreCase(".contains")){
+			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
 			System.out.println(jsonPath);
-			return rs.body(jsonPath, org.hamcrest.Matchers.containsString(ddm.getValidation()));
-		} else if(ddm.getRequestMethod().equals("equalTo")){
-			String jsonPath = ddm.getRequestMethod().substring(ddm.getRequestMethod().indexOf("(\""), ddm.getRequestMethod().indexOf("\")"));
+			if(!(source.path(jsonPath) instanceof String)){
+				Assert.fail("Error, the 'contains' check only use for String type");
+			}
+			return rs.body(jsonPath, org.hamcrest.Matchers.containsString((String)ddm.getValidation()));
+		} else if(ddm.getAction().substring(ddm.getAction().length()-".equalTo".length()).equalsIgnoreCase(".equalTo")){
+			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
 			System.out.println(jsonPath);
 			return rs.body(jsonPath, equalTo(ddm.getValidation()));
 		} else {
