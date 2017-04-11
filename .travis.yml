@@ -3,7 +3,6 @@ jdk:
 - oraclejdk8
 only:
   - github
-test:
-  - 
+script: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 # uncomment and edit the following line if your project needs to run something other than `rake`:
 # script: bundle exec rspec spec
