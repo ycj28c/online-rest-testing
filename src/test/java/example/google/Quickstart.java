@@ -1,4 +1,4 @@
-package google;
+package example.google;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
