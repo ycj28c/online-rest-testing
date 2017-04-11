@@ -49,7 +49,7 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
         } else {
         	for(int i=0;i<values.size();i++){
         		DataDriverModel ddm = new DataDriverModel();
-        		ddm.setId((Integer)values.get(i).get(0));
+        		ddm.setId((String)values.get(i).get(0));
         		ddm.setName((String)values.get(i).get(1));
         		ddm.setDescription((String)values.get(i).get(2));
         		ddm.setRequestUrl((String)values.get(i).get(3));
