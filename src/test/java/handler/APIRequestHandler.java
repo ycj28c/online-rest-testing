@@ -76,18 +76,25 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 
 	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, Response source, ValidatableResponse rs) {
 		if(ddm.getAction().contains("status")){
-			return rs.statusCode((Integer)ddm.getValidation());
+			return rs.statusCode(Integer.parseInt((String)ddm.getValidation()));
 		} else if(ddm.getAction().substring(ddm.getAction().length()-".contains".length()).equalsIgnoreCase(".contains")){
 			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
-			System.out.println(jsonPath);
+			System.out.println("jsonPath: "+jsonPath);
 			if(!(source.path(jsonPath) instanceof String)){
 				Assert.fail("Error, the 'contains' check only use for String type");
 			}
 			return rs.body(jsonPath, org.hamcrest.Matchers.containsString((String)ddm.getValidation()));
 		} else if(ddm.getAction().substring(ddm.getAction().length()-".equalTo".length()).equalsIgnoreCase(".equalTo")){
 			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
-			System.out.println(jsonPath);
-			return rs.body(jsonPath, equalTo(ddm.getValidation()));
+			System.out.println("jsonPath: "+jsonPath);
+			if((source.path(jsonPath) instanceof String)){
+				return rs.body(jsonPath, equalTo((String)ddm.getValidation()));
+			} else if((source.path(jsonPath) instanceof Integer)){
+				return rs.body(jsonPath, equalTo(Integer.parseInt((String)ddm.getValidation())));
+			} else {
+				Assert.fail("Error, the 'equalTo' check only String and Integer type");
+				return null;
+			}
 		} else {
 			return rs;
 		}
