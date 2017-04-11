@@ -1,4 +1,4 @@
-package util;
+package example.testng.util;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;

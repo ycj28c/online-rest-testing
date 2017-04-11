@@ -1,4 +1,4 @@
-package testng.factory;
+package example.testng.factory;
 
 import java.util.ArrayList;
 import java.util.List;
