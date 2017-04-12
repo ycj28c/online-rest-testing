@@ -12,7 +12,7 @@ public class DataDriverModel {
 	public DataDriverModel(){}
 
 	public DataDriverModel(String id, String name, String description, String requestUrl, String requestMethod,
-			String payload, String action, String validation) {
+			String payload, String action, Object validation) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -80,11 +80,11 @@ public class DataDriverModel {
 		this.action = action;
 	}
 
-	public String getValidation() {
+	public Object getValidation() {
 		return validation;
 	}
 
-	public void setValidation(String validation) {
+	public void setValidation(Object validation) {
 		this.validation = validation;
 	}
 
@@ -95,5 +95,5 @@ public class DataDriverModel {
 	String requestMethod;
 	String payload;
 	String action;
-	String validation;
+	Object validation;
 }
