@@ -48,30 +48,53 @@ There are two configuration files:
 
 * client_secret.json
 This is the google credential file download from google, please follow manullay to setup [Java Quickstart](https://developers.google.com/sheets/api/quickstart/java)
-1.Use [this wizard](https://console.developers.google.com/flows/enableapi?apiid=sheets.googleapis.com) to create or select a project in the Google Developers Console and automatically turn on the API. Click Continue, then Go to credentials.
-2.On the Add credentials to your project page, click the Cancel button.
-3.At the top of the page, select the OAuth consent screen tab. Select an Email address, enter a Product name if not already set, and click the Save button.
-4.Select the Credentials tab, click the Create credentials button and select OAuth client ID.
-5.Select the application type Other, enter the name "Google Sheets API Quickstart", and click the Create button.
-6.Click OK to dismiss the resulting dialog.
-7.Click the file_download (Download JSON) button to the right of the client ID.
-8.Move this file to your working directory and rename it client_secret.json.
+
+1. Use [this wizard](https://console.developers.google.com/flows/enableapi?apiid=sheets.googleapis.com) to create or select a project in the Google Developers Console and automatically turn on the API. Click Continue, then Go to credentials.
+2. On the Add credentials to your project page, click the Cancel button.
+3. At the top of the page, select the OAuth consent screen tab. Select an Email address, enter a Product name if not already set, and click the Save button.
+4. Select the Credentials tab, click the Create credentials button and select OAuth client ID.
+5. Select the application type Other, enter the name "Google Sheets API Quickstart", and click the Create button.
+6. Click OK to dismiss the resulting dialog.
+7. Click the file_download (Download JSON) button to the right of the client ID.
+8. Move this file to your working directory and rename it client_secret.json.
 
 * spreadsheet-${name}.properties
 Example:
 ```	
-	# google oauth2 credential, point relative path to your project root
-	CLIENT_SECRET_PATH = /client_secret.json
+# google oauth2 credential, point relative path to your project root
+CLIENT_SECRET_PATH = /client_secret.json
 	
-	# the google spreadsheet id https://docs.google.com/spreadsheets/d/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-	SPREADSHEET_ID = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# the google spreadsheet id https://docs.google.com/spreadsheets/d/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SPREADSHEET_ID = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 	
-	# the sheet name tag
-	SHEET_NAME = zoos
+# the sheet name tag
+SHEET_NAME = zoos
 	
-	# the data range of target sheet
-	VALUE_RANGE = A2:H
+# the data range of target sheet
+VALUE_RANGE = A2:H
 ```
 
-	
+Write API Test
+--------------
+
+| ID | NAME           | DESCRIPTION          | REQUEST_URL                   |REQUEST_METHOD| PAYLOAD | ACTION              | VALIDATION                   |
+|----|:--------------:|:--------------------:|:-----------------------------:|:------------:|:-------:|:-------------------:|:----------------------------:|
+| 1  |test get        |test zoos api get     |http://54.219.154.2:8080/zoos  |GET           |         | status              |200                           |
+| 2	 |test contains	  |test zoos api contains|http://54.219.154.2:8080/zoos/1|GET           |         |("1.name").contains  |Atascadero Charles Paddock Zoo|
+| 3	 |test equalTo	  |test zoos api equal	 |http://54.219.154.2:8080/zoos/2|GET           |         |("2.website").equalTo|bigbearzoo.org                |
+
++ ID: the test id order
++ Name:           the test name
++ Description:    describe your test purpose
++ Request_url:    the request API URL with path
++ Request_method: request type (only get so far)
++ Payload:        the payload send alone with URL request
++ Action:         test check action
++ Validation:     test check expectation
+
+current support action command(json and text):
++ contains: is the response json node or text contains string
++ equalTo:  is the response json node or text equal to number or string 
++ status:   is HTTP response response status equals to validation
++ isNull:   is response null
 
