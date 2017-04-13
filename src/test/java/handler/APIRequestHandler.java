@@ -3,8 +3,10 @@ package handler;
 import static com.jayway.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,6 +102,8 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 	public void teardown(ITestResult result) throws Exception {
 //		DataDriverModel ddm = (DataDriverModel) result.getParameters()[0];
 		String errorLog = null;
+		String start_time = millisecondsToTime(result.getStartMillis());
+		String end_time = millisecondsToTime(result.getEndMillis());
 		try{
 			errorLog = result.getThrowable().getMessage();
 //			System.out.println("eventName: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+ ddm.getId()+", "+result.getStatus()+","+result.isSuccess()+","+result.getThrowable());
@@ -156,6 +160,8 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 		List<Request> requests = new ArrayList<Request>();
 		List<CellData> values_Test_Result = new ArrayList<CellData>();
 		List<CellData> values_Test_Log = new ArrayList<CellData>();
+		List<CellData> start_Time_Col = new ArrayList<CellData>();
+		List<CellData> end_Time_Col = new ArrayList<CellData>();
 
 		int curIndex = index;
 		values_Test_Result.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(testStatus)));
@@ -175,11 +181,40 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 						.setColumnIndex(9))
 						.setRows(Arrays.asList(new RowData().setValues(values_Test_Log)))
 						.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
+		
+		start_Time_Col.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(start_time)));
+		requests.add(new Request().setUpdateCells(
+				new UpdateCellsRequest().setStart(new GridCoordinate()
+						.setSheetId(spreadsheetGid) //#gid=1111111111111
+						.setRowIndex(curIndex)
+						.setColumnIndex(10))
+						.setRows(Arrays.asList(new RowData().setValues(start_Time_Col)))
+						.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
+		
+		end_Time_Col.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(end_time)));
+		requests.add(new Request().setUpdateCells(
+				new UpdateCellsRequest().setStart(new GridCoordinate()
+						.setSheetId(spreadsheetGid) //#gid=1111111111111
+						.setRowIndex(curIndex)
+						.setColumnIndex(11))
+						.setRows(Arrays.asList(new RowData().setValues(end_Time_Col)))
+						.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
 
 		BatchUpdateSpreadsheetRequest batchUpdateRequest = new BatchUpdateSpreadsheetRequest().setRequests(requests);
 		service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateRequest).execute();
 		
 		index++;
+	}
+	
+	/**
+	 * convert the milliseconds to time format
+	 * @param millis
+	 * @return
+	 */
+	public static String millisecondsToTime(long millis){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");    
+		Date resultdate = new Date(millis);
+		return sdf.format(resultdate);
 	}
 	
 	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, Response source, ValidatableResponse rs) {
