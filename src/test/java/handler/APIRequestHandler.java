@@ -3,6 +3,8 @@ package handler;
 import static com.jayway.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +13,20 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
+import org.testng.ITestResult;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
+import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.ExtendedValue;
+import com.google.api.services.sheets.v4.model.GridCoordinate;
+import com.google.api.services.sheets.v4.model.Request;
+import com.google.api.services.sheets.v4.model.RowData;
+import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
@@ -28,16 +40,26 @@ import util.DataDriverModel;
 @TestPropertySource(locations = { "classpath:spreadsheet-${spreadsheet:default}.properties" })
 public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 	
+	private Sheets service = null;
+	private String spreadsheetId = null;
+	private int spreadsheetGid = 0;
+	private String range = null;
+	private int index = 1;
+	
 	@Autowired
 	protected Environment env;
 	
+	@BeforeClass
+	public void initConnection() throws Exception{
+		GoogleAPIService gas = new GoogleAPIService();
+		service = gas.getSheetsService(env.getProperty("CLIENT_SECRET_PATH"));
+		spreadsheetId = env.getProperty("SPREADSHEET_ID");
+		spreadsheetGid = env.getRequiredProperty("SPREADSHEET_GID", Integer.class);
+		range = env.getProperty("SHEET_NAME")+"!"+env.getProperty("VALUE_RANGE");
+	}
+	
 	@DataProvider
 	public Object[][] dp() throws Exception{
-		GoogleAPIService gas = new GoogleAPIService();
-		Sheets service = gas.getSheetsService(env.getProperty("CLIENT_SECRET_PATH"));
-		String spreadsheetId = env.getProperty("SPREADSHEET_ID");
-		String range = env.getProperty("SHEET_NAME")+"!"+env.getProperty("VALUE_RANGE");
-		
         ValueRange response = service.spreadsheets().values()
             .get(spreadsheetId, range)
             .execute();
@@ -72,6 +94,92 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 		Response source = when().get(ddm.getRequestUrl());
 		rs = source.then();
 		exectuteRequestMethod(ddm, source, rs);
+	}
+	
+	@AfterMethod
+	public void teardown(ITestResult result) throws Exception {
+//		DataDriverModel ddm = (DataDriverModel) result.getParameters()[0];
+		String errorLog = null;
+		try{
+			errorLog = result.getThrowable().getMessage();
+//			System.out.println("eventName: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+ ddm.getId()+", "+result.getStatus()+","+result.isSuccess()+","+result.getThrowable());
+		}catch(Exception e){}
+		
+		String testStatus = null;
+		switch (result.getStatus()) {
+			case (ITestResult.FAILURE):
+				testStatus = "Failure";
+				break;
+			case (ITestResult.SKIP):
+				testStatus = "Skip";
+				break;
+			case (ITestResult.STARTED):
+				testStatus = "Started";
+				break;
+			case (ITestResult.SUCCESS):
+				testStatus = "Success";
+				break;
+			case (ITestResult.SUCCESS_PERCENTAGE_FAILURE):
+				testStatus = "Success_Percentage_Failure";
+				break;
+			default:
+				testStatus = "Null";
+				break;
+		}
+		
+//		//
+//		List<Request> requests = new ArrayList<Request>();
+//		// Change the spreadsheet's title.
+//		requests.add(new Request()
+//		        .setUpdateSpreadsheetProperties(new UpdateSpreadsheetPropertiesRequest()
+//		                .setProperties(new SpreadsheetProperties()
+//		                        .setTitle("Template"))
+//		                .setFields("A2")));
+//		// Find and replace text.
+//		requests.add(new Request()
+//		        .setFindReplace(new FindReplaceRequest()
+//		                .setFind("12")
+//		                .setReplacement("22")
+//		                .setAllSheets(false)));
+//		// Add additional requests (operations) ...
+//
+//		BatchUpdateSpreadsheetRequest body =
+//		        new BatchUpdateSpreadsheetRequest().setRequests(requests);
+//		BatchUpdateSpreadsheetResponse response =
+//		        service.spreadsheets().batchUpdate(spreadsheetId, body).execute();
+//		FindReplaceResponse findReplaceResponse = response.getReplies().get(1).getFindReplace();
+//		System.out.printf("%d replacements made.", findReplaceResponse.getOccurrencesChanged());
+	    
+		/* http://stackoverflow.com/questions/38486286/write-data-into-google-spreadsheet-w-java 
+		 * http://stackoverflow.com/questions/39629260/insert-row-without-overwritting-data
+		 * */
+		List<Request> requests = new ArrayList<Request>();
+		List<CellData> values_Test_Result = new ArrayList<CellData>();
+		List<CellData> values_Test_Log = new ArrayList<CellData>();
+
+		int curIndex = index;
+		values_Test_Result.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(testStatus)));
+		requests.add(new Request().setUpdateCells(
+				new UpdateCellsRequest().setStart(new GridCoordinate()
+						.setSheetId(spreadsheetGid) //#gid=111111111111
+						.setRowIndex(curIndex)
+						.setColumnIndex(8))
+						.setRows(Arrays.asList(new RowData().setValues(values_Test_Result)))
+						.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
+		
+		values_Test_Log.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(errorLog)));
+		requests.add(new Request().setUpdateCells(
+				new UpdateCellsRequest().setStart(new GridCoordinate()
+						.setSheetId(spreadsheetGid) //#gid=1111111111111
+						.setRowIndex(curIndex)
+						.setColumnIndex(9))
+						.setRows(Arrays.asList(new RowData().setValues(values_Test_Log)))
+						.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
+
+		BatchUpdateSpreadsheetRequest batchUpdateRequest = new BatchUpdateSpreadsheetRequest().setRequests(requests);
+		service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateRequest).execute();
+		
+		index++;
 	}
 	
 	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, Response source, ValidatableResponse rs) {

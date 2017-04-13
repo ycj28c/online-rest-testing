@@ -54,7 +54,8 @@ public class GoogleAPIService {
 
 	public GoogleAPIService() {
 		GoogleAPIService.APPLICATION_NAME = DEFAULT_APPLICATION_NAME;
-		GoogleAPIService.SCOPES = Arrays.asList(SheetsScopes.SPREADSHEETS_READONLY);
+//		GoogleAPIService.SCOPES = Arrays.asList(SheetsScopes.SPREADSHEETS_READONLY);
+		GoogleAPIService.SCOPES = Arrays.asList(SheetsScopes.SPREADSHEETS);
 		DATA_STORE_DIR = new java.io.File(System.getProperty("user.home"), ".credentials/sheets.googleapis.com");
 		setEnvironement();
 	}
