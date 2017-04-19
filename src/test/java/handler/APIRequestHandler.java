@@ -72,10 +72,9 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 			
 			/* clear the table */
 			if(cleanContent){
-				String cleanrange = sheetname + "!" + cleanRange;
 				ClearValuesRequest requestBody = new ClearValuesRequest();
 			    Sheets.Spreadsheets.Values.Clear request =
-			    		service.spreadsheets().values().clear(spreadsheetId, cleanrange, requestBody);
+			    		service.spreadsheets().values().clear(spreadsheetId, cleanRange, requestBody);
 			    ClearValuesResponse response = request.execute();
 			    System.out.println(response);
 			}
