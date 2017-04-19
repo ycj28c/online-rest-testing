@@ -24,6 +24,8 @@ import org.testng.annotations.Test;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
 import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.ClearValuesRequest;
+import com.google.api.services.sheets.v4.model.ClearValuesResponse;
 import com.google.api.services.sheets.v4.model.ExtendedValue;
 import com.google.api.services.sheets.v4.model.GridCoordinate;
 import com.google.api.services.sheets.v4.model.Request;
@@ -47,17 +49,39 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 	private int spreadsheetGid = 0;
 	private String range = null;
 	private int index = 1;
+	private String sheetname = null;
+	
+	private boolean cleanContent = false;
+	private String cleanRange = null;
 	
 	@Autowired
 	protected Environment env;
 	
 	@BeforeClass
-	public void initConnection() throws Exception{
-		GoogleAPIService gas = new GoogleAPIService();
-		service = gas.getSheetsService(env.getProperty("CLIENT_SECRET_PATH"));
-		spreadsheetId = env.getProperty("SPREADSHEET_ID");
-		spreadsheetGid = env.getRequiredProperty("SPREADSHEET_GID", Integer.class);
-		range = env.getProperty("SHEET_NAME")+"!"+env.getProperty("VALUE_RANGE");
+	public void initConnection(){
+		try{
+			GoogleAPIService gas = new GoogleAPIService();
+			service = gas.getSheetsService(env.getProperty("CLIENT_SECRET_PATH"));
+			spreadsheetId = env.getProperty("SPREADSHEET_ID");
+			spreadsheetGid = env.getRequiredProperty("SPREADSHEET_GID", Integer.class);
+			sheetname = env.getProperty("SHEET_NAME");
+			range = sheetname + "!" + env.getProperty("VALUE_RANGE");
+			
+			cleanContent = env.getProperty("CLEAN_CONTENT", Boolean.class);
+			cleanRange = env.getProperty("SHEET_NAME")+"!"+env.getProperty("CLEAN_RANGE");
+			
+			/* clear the table */
+			if(cleanContent){
+				ClearValuesRequest requestBody = new ClearValuesRequest();
+			    Sheets.Spreadsheets.Values.Clear request =
+			    		service.spreadsheets().values().clear(spreadsheetId, cleanRange, requestBody);
+			    ClearValuesResponse response = request.execute();
+			    System.out.println(response);
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 	
 	@DataProvider
