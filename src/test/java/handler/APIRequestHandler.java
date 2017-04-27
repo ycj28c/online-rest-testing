@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -66,6 +68,16 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 			spreadsheetGid = env.getRequiredProperty("SPREADSHEET_GID", Integer.class);
 			sheetname = env.getProperty("SHEET_NAME");
 			range = sheetname + "!" + env.getProperty("VALUE_RANGE");
+			
+			//regex the output index
+			String indexStr = env.getProperty("VALUE_RANGE", String.class);
+			Pattern pattern = Pattern.compile("([0-9]+):");
+			Matcher matcher = pattern.matcher(indexStr);
+			if(matcher.find()){
+				index = Integer.parseInt(matcher.group(1))-1;
+			} else {
+				index = 1;
+			}
 			
 			cleanContent = env.getProperty("CLEAN_CONTENT", Boolean.class);
 			cleanRange = env.getProperty("SHEET_NAME")+"!"+env.getProperty("CLEAN_RANGE");
