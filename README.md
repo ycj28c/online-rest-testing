@@ -93,6 +93,9 @@ Write API Test
 + Action:         test check action
 + Validation:     test check expectation
 
+Example Google SpreadSheet Link: [Zoos API Google SpreadSheet Example](https://docs.google.com/spreadsheets/d/1oqaZoH4b1wfLr34iLqeppQVT5R-Qnmh3sdmbswlHRMM/edit?usp=sharing)
+Example Google SpreadSheet Link: [More Functional Zoos API SpreadSheet Example](https://docs.google.com/spreadsheets/d/1oqaZoH4b1wfLr34iLqeppQVT5R-Qnmh3sdmbswlHRMM/edit#gid=1759607121)
+
 current support action command(json and text):
 + contains: is the response json node or text contains string
 + equalTo:  is the response json node or text equal to number or string 
