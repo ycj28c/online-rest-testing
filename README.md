@@ -24,7 +24,7 @@ When first time running automation test, test program will connect to the google
 
 First run below, you got authenticate URL in browser like this:
 	
-	https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleuserconte	nt.com&redirect_uri=http://localhost:56942/Callback&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets.readonly
+	https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id={your client id, such as xxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com}&redirect_uri=http://localhost:56942/Callback&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets
 
 Then run in jenkins, find the jenkins console log:
 	
@@ -32,7 +32,7 @@ Then run in jenkins, find the jenkins console log:
 
 replace the port in URL, and run it in your local, the authenticate can be done:
 
-	https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleuserconte	nt.com&redirect_uri=http://localhost:56384/Callback&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets.readonly
+	https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id={your client id, such as xxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com}&redirect_uri=http://localhost:56384/Callback&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets
 
 How to run
 ----------
