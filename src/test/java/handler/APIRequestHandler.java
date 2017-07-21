@@ -260,6 +260,9 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 		} catch(com.jayway.restassured.path.json.exception.JsonPathException e){
 			System.out.println("** the response is not json format");
 			return exectuteRequestMethodText(ddm, source, rs);
+		} catch(IllegalStateException ex){
+			System.out.println("** the server response :"+ ex);
+			return exectuteRequestMethodText(ddm, source, rs);
 		}
 		/* TODO: xml */
 	}
