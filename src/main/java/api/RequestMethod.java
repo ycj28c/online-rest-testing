@@ -1,0 +1,5 @@
+package api;
+
+public enum RequestMethod {
+	GET, POST, PUT, PATCH, DELETE, COPY, HEAD, OPTIONS, LINK, UNLINK, PURGE, LOCK, UNLOCK, PROPFIND, VIEW;
+}

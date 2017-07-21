@@ -15,7 +15,11 @@
 		<slf4j.version>1.7.23</slf4j.version>
 		<rest-assured.version>2.5.0</rest-assured.version>
 		<gdata.core.version>1.47.1</gdata.core.version>
+		<jackson-databind.version>2.7.0</jackson-databind.version>
+		<org.json.version>20160810</org.json.version>
 		<google-api-services-sheets.version>v4-rev469-1.22.0</google-api-services-sheets.version>
+		<HikariCP.version>2.3.9</HikariCP.version>
+		<postgres.jdbc.driver.version>9.4-1201-jdbc41</postgres.jdbc.driver.version>
 		<spring.framework.version>5.0.0.M4</spring.framework.version>
 		<maven.surefire.version>2.19.1</maven.surefire.version>
 		<maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
@@ -52,10 +56,30 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>${org.json.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.jayway.restassured</groupId>
 			<artifactId>rest-assured</artifactId>
 			<version>${rest-assured.version}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson-databind.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${postgres.jdbc.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>${HikariCP.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
@@ -112,10 +136,22 @@
 				<version>${maven.surefire.version}</version>
 				<configuration>
 					<!-- specify to run by APIRequestHandler class -->
-					<test>APIRequestHandler</test>
+					<test>${handler}</test>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>default</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<handler>APIRequestHandler</handler>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>

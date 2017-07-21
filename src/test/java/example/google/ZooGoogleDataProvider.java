@@ -62,7 +62,7 @@ public class ZooGoogleDataProvider extends AbstractTestNGSpringContextTests{
         		ddm.setRequestMethod((String)values.get(i).get(4));
         		ddm.setPayload((String)values.get(i).get(5));
         		ddm.setAction((String)values.get(i).get(6));
-        		ddm.setValidation(values.get(i).get(7));
+        		ddm.setValidation((String)values.get(i).get(7));
         		
         		System.out.println("ddm data:" + ddm.toString());
         		obj[i][0] = ddm;
@@ -99,78 +99,26 @@ public class ZooGoogleDataProvider extends AbstractTestNGSpringContextTests{
 	}
 
 	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, Response source, ValidatableResponse rs) {
-		try {
-			source.path("."); //check if the response is json format
-			return exectuteRequestMethodJson(ddm, source, rs);
-		} catch(com.jayway.restassured.path.json.exception.JsonPathException e){
-			System.out.println("** the response is not json format");
-			return exectuteRequestMethodText(ddm, source, rs);
-		}
-		/* TODO: xml */
-	}
-	
-	private ValidatableResponse exectuteRequestMethodJson(DataDriverModel ddm, Response source, ValidatableResponse rs) {
 		if(ddm.getAction().contains("status")){
 			return rs.statusCode(Integer.parseInt((String)ddm.getValidation()));
-		} else if (ddm.getAction().length() >= ".contains".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - ".contains".length()).equalsIgnoreCase(".contains")) {
+		} else if(ddm.getAction().substring(ddm.getAction().length()-".contains".length()).equalsIgnoreCase(".contains")){
 			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
 			System.out.println("jsonPath: "+jsonPath);
 			if(!(source.path(jsonPath) instanceof String)){
 				Assert.fail("Error, the 'contains' check only use for String type");
 			}
 			return rs.body(jsonPath, org.hamcrest.Matchers.containsString((String)ddm.getValidation()));
-		} else if (ddm.getAction().length() >= ".equalTo".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - ".equalTo".length()).equalsIgnoreCase(".equalTo")) {
+		} else if(ddm.getAction().substring(ddm.getAction().length()-".equalTo".length()).equalsIgnoreCase(".equalTo")){
 			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
 			System.out.println("jsonPath: "+jsonPath);
-			if(source.path(jsonPath) instanceof String){
+			if((source.path(jsonPath) instanceof String)){
 				return rs.body(jsonPath, equalTo((String)ddm.getValidation()));
-			} else if(source.path(jsonPath) instanceof Integer){
+			} else if((source.path(jsonPath) instanceof Integer)){
 				return rs.body(jsonPath, equalTo(Integer.parseInt((String)ddm.getValidation())));
-			} else if(source.path(jsonPath) instanceof Float){
-				return rs.body(jsonPath, equalTo(Float.parseFloat((String)ddm.getValidation())));
-			} else if(source.path(jsonPath) instanceof Boolean){
-				return rs.body(jsonPath, equalTo(Boolean.parseBoolean((String)ddm.getValidation())));
 			} else {
-				Assert.fail("Error, the 'equalTo' check only String, Integer or Float type");
+				Assert.fail("Error, the 'equalTo' check only String and Integer type");
 				return null;
 			}
-		} else if (ddm.getAction().length() >= ".isNull".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - ".isNull".length()).equalsIgnoreCase(".isNull")) {
-			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
-			System.out.println("jsonPath: "+jsonPath);
-			if(Boolean.parseBoolean((String)ddm.getValidation())){
-				Assert.assertNull(source.path(jsonPath));
-			} else if(((String)ddm.getValidation()).equalsIgnoreCase("false")){
-				Assert.assertNotNull(source.path(jsonPath));
-			} else {
-				Assert.fail("Error, the 'VALIDATION' should be either false or true where check 'isNull'");
-			}
-			return null;
-		} else {
-			return rs;
-		}
-	}
-	
-	private ValidatableResponse exectuteRequestMethodText(DataDriverModel ddm, Response source, ValidatableResponse rs) {
-		if(ddm.getAction().contains("status")){
-			return rs.statusCode(Integer.parseInt((String)ddm.getValidation()));
-		} else if (ddm.getAction().length() >= "contains".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - "contains".length()).equalsIgnoreCase("contains")) {
-			String responseString = source.asString();
-			Assert.assertTrue(responseString.indexOf((String)ddm.getValidation())!=-1);
-			return rs;
-		} else if (ddm.getAction().length() >= "equalTo".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - "equalTo".length()).equalsIgnoreCase("equalTo")) {
-			String responseString = source.asString();
-			Assert.assertTrue(responseString.equalsIgnoreCase((String)ddm.getValidation()));
-			return rs;
-		} else if (ddm.getAction().length() >= "isNull".length()
-				&& ddm.getAction().substring(ddm.getAction().length() - "isNull".length()).equalsIgnoreCase("isNull")) {
-			String responseString = source.asString();
-			Assert.assertTrue(!responseString.trim().isEmpty());
-			return rs;
 		} else {
 			return rs;
 		}
