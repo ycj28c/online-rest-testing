@@ -23,6 +23,7 @@
 		<spring.framework.version>5.0.0.M4</spring.framework.version>
 		<maven.surefire.version>2.19.1</maven.surefire.version>
 		<maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
+		<core-matchers.version>1.8</core-matchers.version>
 	</properties>
 
 	<repositories>
@@ -59,6 +60,11 @@
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>${org.json.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.testinfected.hamcrest-matchers</groupId>
+			<artifactId>core-matchers</artifactId>
+			<version>${core-matchers.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.jayway.restassured</groupId>
