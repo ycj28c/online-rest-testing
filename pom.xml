@@ -23,7 +23,6 @@
 		<spring.framework.version>5.0.0.M4</spring.framework.version>
 		<maven.surefire.version>2.19.1</maven.surefire.version>
 		<maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
-		<core-matchers.version>1.8</core-matchers.version>
 	</properties>
 
 	<repositories>
@@ -62,15 +61,10 @@
 			<version>${org.json.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.testinfected.hamcrest-matchers</groupId>
-			<artifactId>core-matchers</artifactId>
-			<version>${core-matchers.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.jayway.restassured</groupId>
 			<artifactId>rest-assured</artifactId>
 			<version>${rest-assured.version}</version>
-			<scope>test</scope>
+			<!--scope>test</scope-->
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
