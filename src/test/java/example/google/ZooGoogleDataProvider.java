@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
 
 import config.CommonConfig;
@@ -82,9 +84,9 @@ public class ZooGoogleDataProvider extends AbstractTestNGSpringContextTests{
 //		Pharser(ddm.getRequestMethod())
 		
 		ValidatableResponse rs = null;
-		//Response rs = when().get(ddm.getRequestUrl());
-		rs = when().get(ddm.getRequestUrl()).then();
-		exectuteRequestMethod(ddm, rs);
+		Response source = when().get(ddm.getRequestUrl());
+		rs = source.then();
+		exectuteRequestMethod(ddm, source, rs);
 //		rs = rs.statusCode(Integer.valueOf(ddm.getValidation()));
 //		rs = rs.body("1.name", equalTo("Atascadero Charles Paddock Zoo"));
 		
@@ -96,17 +98,27 @@ public class ZooGoogleDataProvider extends AbstractTestNGSpringContextTests{
 //			.body("1.name", equalTo("Atascadero Charles Paddock Zoo"));
 	}
 
-	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, ValidatableResponse rs) {
-		if(ddm.getRequestMethod().equals("status")){
-			return rs.statusCode(Integer.valueOf(ddm.getValidation()));
-		} else if(ddm.getRequestMethod().equals("contains")){
-			String jsonPath = ddm.getRequestMethod().substring(ddm.getRequestMethod().indexOf("(\""), ddm.getRequestMethod().indexOf("\")"));
-			System.out.println(jsonPath);
-			return rs.body(jsonPath, org.hamcrest.Matchers.containsString(ddm.getValidation()));
-		} else if(ddm.getRequestMethod().equals("equalTo")){
-			String jsonPath = ddm.getRequestMethod().substring(ddm.getRequestMethod().indexOf("(\""), ddm.getRequestMethod().indexOf("\")"));
-			System.out.println(jsonPath);
-			return rs.body(jsonPath, equalTo(ddm.getValidation()));
+	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, Response source, ValidatableResponse rs) {
+		if(ddm.getAction().contains("status")){
+			return rs.statusCode(Integer.parseInt((String)ddm.getValidation()));
+		} else if(ddm.getAction().substring(ddm.getAction().length()-".contains".length()).equalsIgnoreCase(".contains")){
+			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
+			System.out.println("jsonPath: "+jsonPath);
+			if(!(source.path(jsonPath) instanceof String)){
+				Assert.fail("Error, the 'contains' check only use for String type");
+			}
+			return rs.body(jsonPath, org.hamcrest.Matchers.containsString((String)ddm.getValidation()));
+		} else if(ddm.getAction().substring(ddm.getAction().length()-".equalTo".length()).equalsIgnoreCase(".equalTo")){
+			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
+			System.out.println("jsonPath: "+jsonPath);
+			if((source.path(jsonPath) instanceof String)){
+				return rs.body(jsonPath, equalTo((String)ddm.getValidation()));
+			} else if((source.path(jsonPath) instanceof Integer)){
+				return rs.body(jsonPath, equalTo(Integer.parseInt((String)ddm.getValidation())));
+			} else {
+				Assert.fail("Error, the 'equalTo' check only String and Integer type");
+				return null;
+			}
 		} else {
 			return rs;
 		}

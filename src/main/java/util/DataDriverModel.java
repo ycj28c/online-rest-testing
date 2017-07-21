@@ -1,15 +1,25 @@
 package util;
 
-public class DataDriverModel {
+public class DataDriverModel implements Cloneable {
 
 	@Override
 	public String toString() {
-		return "DataDriverModel [id=" + id + ", name=" + name + ", description=" + description + ", requestUrl=" + requestUrl
-				+ ", requestMethod=" + requestMethod + ", payload=" + payload + ", action=" + action + ", validation="
-				+ validation + "]";
+		return "DataDriverModel [id=" + id + ", name=" + name + ", description=" + description + ", requestUrl="
+				+ requestUrl + ", requestMethod=" + requestMethod + ", payload=" + payload + ", action=" + action
+				+ ", validation=" + validation + "]";
 	}
-	
-	public DataDriverModel(){}
+
+	public Object clone() {
+		// shallow copy
+		try {
+			return super.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
+
+	public DataDriverModel() {
+	}
 
 	public DataDriverModel(String id, String name, String description, String requestUrl, String requestMethod,
 			String payload, String action, Object validation) {
