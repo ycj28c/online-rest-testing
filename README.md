@@ -136,11 +136,11 @@ Here is the place to put your global variables, current support string/JSON/quer
 To use the query variable, we need to set up the database connection properties like below(db-***.properties in src/test/resources). 
 ```
 	product=xxx
-	insight.driverClassName=org.postgresql.Driver
-	insight.url=jdbc:postgresql://1.1.1.1:5432/xxx
-	insight.username=xxx
-	insight.password=xxx
-	insight.maxPoolSize = 5
+	xxx.driverClassName=org.postgresql.Driver
+	xxx.url=jdbc:postgresql://1.1.1.1:5432/xxx
+	xxx.username=xxx
+	xxx.password=xxx
+	xxx.maxPoolSize = 5
 ```	
 When run the test, need to add the correct db parameters:
 
