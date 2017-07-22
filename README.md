@@ -121,24 +121,26 @@ Now it accept the string/JSON/query format variable injection to support your bu
 In bulk API testing, there will have 3 types of spreadsheets:
 1. GlobalVaribles spreadsheet
 Here is the place to put your global variables, current support string/JSON/query variables
+
 | ID | VARIABLE_NAME  | VARIABLE_DESCRIPTION | VARIABLE_TYPE |VALUE                        |
 |----|:--------------:|:--------------------:|:-------------:|:---------------------------:|
 | 1  |zooid           |zoo ids               |string         |1,2,3,4,5,6,7,8              |
 | 2	 |animals	      |animal species        |query          |select id, name from animals |
 | 3	 |jsontest	      |json example          |json           |[{"a":1,"b":2},{"a":3,"b":4}]|
 |... |...	          |...                   |...            |....                         |
+
 * If String, the variable will split by comma, when inject into test cases, the test case will go over each situation of the split value. 
 * If JSON, the variable if parser with json format, will inject into test cases by each block, for example: for "[{"a":1,"b":2},{"a":3,"b":4}]" has two test parameter block, {"a":1,"b":2} is first block, "{"a":3,"b":4}" is second block. (currently only support one hierarchy json array).
 * If Query, the variable spreadsheet is able to query the database, the usage is same as JSON, for example: "select id, name from animals" mean get id and name value from animals table, then you're able to inejct parameter in test cases spreadsheet, such as {{animals.id}}, {{animals.name}}.
 To use the query variable, we need to set up the database connection properties like below(db-***.properties in src/test/resources). 
-
+```
 	product=xxx
 	insight.driverClassName=org.postgresql.Driver
 	insight.url=jdbc:postgresql://1.1.1.1:5432/xxx
 	insight.username=xxx
 	insight.password=xxx
 	insight.maxPoolSize = 5
-	
+```	
 When run the test, need to add the correct db parameters:
 
 	mvn test -Dspreadsheet=zoos -Dhandler=APIRequestBulkHandler -Ddb={dbname}
@@ -146,11 +148,13 @@ When run the test, need to add the correct db parameters:
 2. TestResult spreadsheet
 It is the same as normal testing mode spreadsheet, but this spreadsheet is read-only, according to the test cases and the variable, display the test result into this spreadsheet
 3. TestCase spreadsheet, look like below
+
 | ID | NAME           | DESCRIPTION          | REQUEST_URL                   |REQUEST_METHOD| PAYLOAD | ACTION              | VALIDATION                   |
 |----|:--------------:|:--------------------:|:-----------------------------:|:------------:|:-------:|:-------------------:|:----------------------------:|
 | 1  |test get        |test zoos api get     |http://54.219.154.2:8080/zoos  |GET           |         | status              |200                           |
 | 2	 |test contains	  |test zoos api contains|http://54.219.154.2:8080/zoos/{zooid}|GET           |         |("1.name").contains  |Atascadero Charles Paddock Zoo|
 | 3	 |test equalTo	  |test zoos api equal	 |http://54.219.154.2:8080/zoos/2/{animals.name}|GET           |         |("2.website").equalTo|bigbearzoo.org                |
+
 This part is to add the test cases, similar to the normal testing, the things different is we can injection the variable into the REQUEST_URL/REQUEST_METHOD/PAYLOAD/ACTION/VALIDATION.
 * If it is string variable, we can inject like {{string-name}}
 * If it is JSON variable, we can inject like {{JSON-name.a}}, {{json.b}}
