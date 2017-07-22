@@ -34,14 +34,6 @@ replace the port in URL, and run it in your local, the authenticate can be done:
 
 	https://accounts.google.com/o/oauth2/auth?access_type=offline&client_id={your client id, such as xxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com}&redirect_uri=http://localhost:56384/Callback&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets
 
-How to run
-----------
-We can run in by MAVEN command line
-
-	mvn test -Dspreadsheet=zoos
-
-It will grab the configuration in /test/resources/spreadsheet-${name}.properties (in this case is zoos)
-
 Configuration
 -------------
 There are two configuration files:
@@ -101,4 +93,70 @@ current support action command(json and text):
 + equalTo:  is the response json node or text equal to number or string 
 + status:   is HTTP response response status equals to validation
 + isNull:   is response null
+
+Normal Testing Mode
+===================
+
+How to run
+----------
+We can run in by MAVEN command line
+
+	mvn test -Dspreadsheet=zoos
+	mvn test -Dspreadsheet=zoos -Dhandler=APIRequestHandler
+
+It will grab the configuration in /test/resources/spreadsheet-${name}.properties (in this case is zoos)
+
+Bulk Testing Mode
+=================
+
+How to run
+----------
+We can run in by MAVEN command line, here we must use the APIRequestBulkHandler to let it run in bulk mode
+
+	mvn test -Dspreadsheet=zoos -Dhandler=APIRequestBulkHandler -Ddb=zoodb
+
+If you need to run same API test for a series of test with different parameter, you can use bulk API testing mode.
+Now it accept the string/JSON/query format variable injection to support your bulk test.
+
+In bulk API testing, there will have 3 types of spreadsheets:
+1. GlobalVaribles spreadsheet
+Here is the place to put your global variables, current support string/JSON/query variables
+| ID | VARIABLE_NAME  | VARIABLE_DESCRIPTION | VARIABLE_TYPE |VALUE                        |
+|----|:--------------:|:--------------------:|:-------------:|:---------------------------:|
+| 1  |zooid           |zoo ids               |string         |1,2,3,4,5,6,7,8              |
+| 2	 |animals	      |animal species        |query          |select id, name from animals |
+| 3	 |jsontest	      |json example          |json           |[{"a":1,"b":2},{"a":3,"b":4}]|
+|... |...	          |...                   |...            |....                         |
+* If String, the variable will split by comma, when inject into test cases, the test case will go over each situation of the split value. 
+* If JSON, the variable if parser with json format, will inject into test cases by each block, for example: for "[{"a":1,"b":2},{"a":3,"b":4}]" has two test parameter block, {"a":1,"b":2} is first block, "{"a":3,"b":4}" is second block. (currently only support one hierarchy json array).
+* If Query, the variable spreadsheet is able to query the database, the usage is same as JSON, for example: "select id, name from animals" mean get id and name value from animals table, then you're able to inejct parameter in test cases spreadsheet, such as {{animals.id}}, {{animals.name}}.
+To use the query variable, we need to set up the database connection properties like below(db-***.properties in src/test/resources). 
+
+	product=xxx
+	insight.driverClassName=org.postgresql.Driver
+	insight.url=jdbc:postgresql://1.1.1.1:5432/xxx
+	insight.username=xxx
+	insight.password=xxx
+	insight.maxPoolSize = 5
+	
+When run the test, need to add the correct db parameters:
+
+	mvn test -Dspreadsheet=zoos -Dhandler=APIRequestBulkHandler -Ddb={dbname}
+	
+2. TestResult spreadsheet
+It is the same as normal testing mode spreadsheet, but this spreadsheet is read-only, according to the test cases and the variable, display the test result into this spreadsheet
+3. TestCase spreadsheet, look like below
+| ID | NAME           | DESCRIPTION          | REQUEST_URL                   |REQUEST_METHOD| PAYLOAD | ACTION              | VALIDATION                   |
+|----|:--------------:|:--------------------:|:-----------------------------:|:------------:|:-------:|:-------------------:|:----------------------------:|
+| 1  |test get        |test zoos api get     |http://54.219.154.2:8080/zoos  |GET           |         | status              |200                           |
+| 2	 |test contains	  |test zoos api contains|http://54.219.154.2:8080/zoos/{zooid}|GET           |         |("1.name").contains  |Atascadero Charles Paddock Zoo|
+| 3	 |test equalTo	  |test zoos api equal	 |http://54.219.154.2:8080/zoos/2/{animals.name}|GET           |         |("2.website").equalTo|bigbearzoo.org                |
+This part is to add the test cases, similar to the normal testing, the things different is we can injection the variable into the REQUEST_URL/REQUEST_METHOD/PAYLOAD/ACTION/VALIDATION.
+* If it is string variable, we can inject like {{string-name}}
+* If it is JSON variable, we can inject like {{JSON-name.a}}, {{json.b}}
+* If it is query variable, we can inject like {{query-name.col1}}, {{query-name.col2}}
+We can inject the parameter with multiple combinations, such as string + string, string + json, json + query, string + json + query. According to the variables you have, the test will automatically run each parameter combination, print the result in TestResult spreadsheet.
+
+
+
 
