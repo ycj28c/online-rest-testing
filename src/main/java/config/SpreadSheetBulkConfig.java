@@ -11,17 +11,17 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import com.google.api.services.sheets.v4.Sheets;
 
 import google.GoogleAPIService;
-import google.SpreadSheetProperties;
+import google.SpreadSheetBulkProperties;
 
 @Configuration
-public class SpreadSheetConfig {
+public class SpreadSheetBulkConfig {
 
 	@Autowired
 	ConfigurableEnvironment env;
 
 	@Bean
-	SpreadSheetProperties getSpreadSheetProperties() {
-		SpreadSheetProperties bulkProperties = new SpreadSheetProperties();
+	SpreadSheetBulkProperties getSpreadSheetProperties() {
+		SpreadSheetBulkProperties bulkProperties = new SpreadSheetBulkProperties();
 
 		try {
 			GoogleAPIService gas = new GoogleAPIService();

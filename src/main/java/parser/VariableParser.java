@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
-import google.SpreadSheetProperties;
+import google.SpreadSheetBulkProperties;
 
 public class VariableParser {
 
@@ -138,7 +138,7 @@ public class VariableParser {
 	 * @param variableMap
 	 * @param jdbcTemplate
 	 */
-	public static void generateVaribleMap(SpreadSheetProperties spreadSheetConn, HashMap<String, List<?>> variableMap, JdbcTemplate jdbcTemplate){
+	public static void generateVaribleMap(SpreadSheetBulkProperties spreadSheetConn, HashMap<String, List<?>> variableMap, JdbcTemplate jdbcTemplate){
 		try{
 			ValueRange response = spreadSheetConn.getService().spreadsheets().values()
 					.get(spreadSheetConn.getSpreadsheetId(), spreadSheetConn.getVarible_range()).execute();

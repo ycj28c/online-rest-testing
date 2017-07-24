@@ -29,15 +29,15 @@ import com.jayway.restassured.response.ValidatableResponse;
 import api.ApiRunner;
 import config.CommonConfig;
 import config.DatabaseConfig;
-import config.SpreadSheetConfig;
+import config.SpreadSheetBulkConfig;
 import config.TestConfig;
+import google.SpreadSheetBulkProperties;
 import google.SpreadSheetOperater;
-import google.SpreadSheetProperties;
 import parser.TestCaseParser;
 import parser.VariableParser;
 import util.DataDriverModel;
 
-@ContextConfiguration(classes = { TestConfig.class, CommonConfig.class, DatabaseConfig.class, SpreadSheetConfig.class })
+@ContextConfiguration(classes = { TestConfig.class, CommonConfig.class, DatabaseConfig.class, SpreadSheetBulkConfig.class })
 @TestPropertySource(locations = { "classpath:spreadsheet-bulk-${spreadsheet:default}.properties" })
 public class APIRequestBulkHandler extends AbstractTestNGSpringContextTests{
 	
@@ -48,7 +48,7 @@ public class APIRequestBulkHandler extends AbstractTestNGSpringContextTests{
 	protected Environment env;
 	
 	@Autowired
-	protected SpreadSheetProperties spreadSheetConn;
+	protected SpreadSheetBulkProperties spreadSheetConn;
 
 	private Integer MAXIMUM_DDM_PER_ROW = 50;
 	
@@ -77,7 +77,7 @@ public class APIRequestBulkHandler extends AbstractTestNGSpringContextTests{
 	 * read data from spreadsheet and provider for the test
 	 */
 	@DataProvider
-	public Object[][] spreadSheetProvider() throws Exception{
+	private Object[][] spreadSheetProvider() throws Exception{
 //        ValueRange response = service.spreadsheets().values()
 //            .get(spreadsheetId, test_case_range)
 //            .execute();
@@ -125,7 +125,7 @@ public class APIRequestBulkHandler extends AbstractTestNGSpringContextTests{
 	public void teardown(ITestResult result) {
 		DataDriverModel ddm = (DataDriverModel) result.getParameters()[0];
 		
-		SpreadSheetOperater.OutputTestResult(ddm, result, spreadSheetConn);
+		SpreadSheetOperater.OutputBulkTestResult(ddm, result, spreadSheetConn);
 	}
 
 }
