@@ -50,7 +50,7 @@ This is the google credential file download from google, please follow manullay 
 7. Click the file_download (Download JSON) button to the right of the client ID.
 8. Move this file to your working directory and rename it client_secret.json.
 
-* spreadsheet-${name}.properties
+* Single mode: spreadsheet-${name}.properties
 Example:
 ```	
 # google oauth2 credential, point relative path to your project root
@@ -64,6 +64,32 @@ SHEET_NAME = zoos
 	
 # the data range of target sheet
 VALUE_RANGE = A2:H
+```
+
+* Bulk mode: spreadsheet-bulk-${name}.properties 
+Example:
+```	
+# google spreadsheet connection
+SPREADSHEET_ID = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# test cases
+TEST_CASE_SPREADSHEET_GID = 11111111
+TEST_CASE_SHEET_NAME = API-TestCases
+TEST_CASE_VALUE_RANGE = A2:H
+
+# test results
+TEST_RESULT_SPREADSHEET_GID = 22222222
+TEST_RESULT_SHEET_NAME = API-Results
+TEST_RESULT_VALUE_RANGE = A2:L
+
+# variables
+VARIABLE_SPREADSHEET_GID = 33333333
+VARIABLE_SHEET_NAME = GlobalVaribles
+VARIABLE_VALUE_RANGE = A2:E
+
+# test parameter
+CLEAN_CONTENT = true
+CLEAN_RANGE = A2:L
 ```
 
 Write API Test
@@ -145,8 +171,13 @@ When run the test, need to add the correct db parameters:
 
 	mvn test -Dspreadsheet=zoos -Dhandler=APIRequestBulkHandler -Ddb={dbname}
 	
+Example Bulk Google SpreadSheet Link: [Zoos API Google SpreadSheet Example GlobalVariable](https://docs.google.com/spreadsheets/d/17QhgC_kszjrniVQEbcRpprElDTjw6-QcyLIRPyLvkbg/edit#gid=530185914)
+	
 2. TestResult spreadsheet
 It is the same as normal testing mode spreadsheet, but this spreadsheet is read-only, according to the test cases and the variable, display the test result into this spreadsheet
+
+Example Bulk Google SpreadSheet Link: [Zoos API Google SpreadSheet Example Test Result](https://docs.google.com/spreadsheets/d/17QhgC_kszjrniVQEbcRpprElDTjw6-QcyLIRPyLvkbg/edit#gid=1118839030)
+
 3. TestCase spreadsheet, look like below
 
 | ID | NAME           | DESCRIPTION          | REQUEST_URL                   |REQUEST_METHOD| PAYLOAD | ACTION              | VALIDATION                   |
@@ -161,6 +192,7 @@ This part is to add the test cases, similar to the normal testing, the things di
 * If it is query variable, we can inject like {{query-name.col1}}, {{query-name.col2}}
 We can inject the parameter with multiple combinations, such as string + string, string + json, json + query, string + json + query. According to the variables you have, the test will automatically run each parameter combination, print the result in TestResult spreadsheet.
 
+Example Bulk Google SpreadSheet Link: [Zoos API Google SpreadSheet Example Test Case](https://docs.google.com/spreadsheets/d/17QhgC_kszjrniVQEbcRpprElDTjw6-QcyLIRPyLvkbg/edit#gid=64827870)
 
 
 
