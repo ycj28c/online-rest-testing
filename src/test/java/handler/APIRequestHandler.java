@@ -1,22 +1,14 @@
 package handler;
 
 import static com.jayway.restassured.RestAssured.when;
-import static org.hamcrest.Matchers.equalTo;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -24,69 +16,38 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
-import com.google.api.services.sheets.v4.model.CellData;
 import com.google.api.services.sheets.v4.model.ClearValuesRequest;
 import com.google.api.services.sheets.v4.model.ClearValuesResponse;
-import com.google.api.services.sheets.v4.model.ExtendedValue;
-import com.google.api.services.sheets.v4.model.GridCoordinate;
-import com.google.api.services.sheets.v4.model.Request;
-import com.google.api.services.sheets.v4.model.RowData;
-import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
 
+import api.ApiRunner;
 import config.CommonConfig;
+import config.SpreadSheetSingleConfig;
 import config.TestConfig;
-import google.GoogleAPIService;
+import google.SpreadSheetOperater;
+import google.SpreadSheetSingleProperties;
 import util.DataDriverModel;
 
-@ContextConfiguration(classes = { TestConfig.class, CommonConfig.class })
+@ContextConfiguration(classes = { TestConfig.class, CommonConfig.class, SpreadSheetSingleConfig.class  })
 @TestPropertySource(locations = { "classpath:spreadsheet-${spreadsheet:default}.properties" })
 public class APIRequestHandler extends AbstractTestNGSpringContextTests{
-	
-	private Sheets service = null;
-	private String spreadsheetId = null;
-	private int spreadsheetGid = 0;
-	private String range = null;
-	private int index = 1;
-	private String sheetname = null;
-	
-	private boolean cleanContent = false;
-	private String cleanRange = null;
 	
 	@Autowired
 	protected Environment env;
 	
+	@Autowired
+	protected SpreadSheetSingleProperties spreadSheetConn;
+	
 	@BeforeClass
 	public void initConnection(){
 		try{
-			GoogleAPIService gas = new GoogleAPIService();
-			service = gas.getSheetsService(env.getProperty("CLIENT_SECRET_PATH"));
-			spreadsheetId = env.getProperty("SPREADSHEET_ID");
-			spreadsheetGid = env.getRequiredProperty("SPREADSHEET_GID", Integer.class);
-			sheetname = env.getProperty("SHEET_NAME");
-			range = sheetname + "!" + env.getProperty("VALUE_RANGE");
-			
-			//regex the output index
-			String indexStr = env.getProperty("VALUE_RANGE", String.class);
-			Pattern pattern = Pattern.compile("([0-9]+):");
-			Matcher matcher = pattern.matcher(indexStr);
-			if(matcher.find()){
-				index = Integer.parseInt(matcher.group(1))-1;
-			} else {
-				index = 1;
-			}
-			
-			cleanContent = env.getProperty("CLEAN_CONTENT", Boolean.class);
-			cleanRange = env.getProperty("SHEET_NAME")+"!"+env.getProperty("CLEAN_RANGE");
-			
 			/* clear the table */
-			if(cleanContent){
+			if(spreadSheetConn.isCleanContent()){
 				ClearValuesRequest requestBody = new ClearValuesRequest();
-			    Sheets.Spreadsheets.Values.Clear request =
-			    		service.spreadsheets().values().clear(spreadsheetId, cleanRange, requestBody);
+				Sheets.Spreadsheets.Values.Clear request = spreadSheetConn.getService().spreadsheets().values()
+						.clear(spreadSheetConn.getSpreadsheetId(), spreadSheetConn.getCleanRange(), requestBody);
 			    ClearValuesResponse response = request.execute();
 			    System.out.println(response);
 			}
@@ -97,9 +58,9 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 	}
 	
 	@DataProvider
-	public Object[][] dp() throws Exception{
-        ValueRange response = service.spreadsheets().values()
-            .get(spreadsheetId, range)
+	private Object[][] spreadSheetProvider() throws Exception{
+        ValueRange response = spreadSheetConn.getService().spreadsheets().values()
+            .get(spreadSheetConn.getSpreadsheetId(), spreadSheetConn.getTest_result_range())
             .execute();
         List<List<Object>> values = response.getValues();
 		
@@ -125,213 +86,18 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
         return obj;
 	}
 
-	@Test(dataProvider = "dp")
+	@Test(dataProvider = "spreadSheetProvider")
 	public void testAPICalls(DataDriverModel ddm) {
 		System.out.println(ddm.getId() + "." + ddm.getName() + ":" + ddm.getDescription());
 		ValidatableResponse rs = null;
 		Response source = when().get(ddm.getRequestUrl());
 		rs = source.then();
-		exectuteRequestMethod(ddm, source, rs);
+		ApiRunner.exectuteRequestMethod(ddm, source, rs);
 	}
 	
 	@AfterMethod
 	public void teardown(ITestResult result) throws Exception {
-//		DataDriverModel ddm = (DataDriverModel) result.getParameters()[0];
-		String errorLog = null;
-		String start_time = millisecondsToTime(result.getStartMillis());
-		String end_time = millisecondsToTime(result.getEndMillis());
-		try{
-			errorLog = result.getThrowable().getMessage();
-//			System.out.println("eventName: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+ ddm.getId()+", "+result.getStatus()+","+result.isSuccess()+","+result.getThrowable());
-		}catch(Exception e){}
-		
-		String testStatus = null;
-		switch (result.getStatus()) {
-			case (ITestResult.FAILURE):
-				testStatus = "Failure";
-				break;
-			case (ITestResult.SKIP):
-				testStatus = "Skip";
-				break;
-			case (ITestResult.STARTED):
-				testStatus = "Started";
-				break;
-			case (ITestResult.SUCCESS):
-				testStatus = "Success";
-				break;
-			case (ITestResult.SUCCESS_PERCENTAGE_FAILURE):
-				testStatus = "Success_Percentage_Failure";
-				break;
-			default:
-				testStatus = "Null";
-				break;
-		}
-		
-//		//
-//		List<Request> requests = new ArrayList<Request>();
-//		// Change the spreadsheet's title.
-//		requests.add(new Request()
-//		        .setUpdateSpreadsheetProperties(new UpdateSpreadsheetPropertiesRequest()
-//		                .setProperties(new SpreadsheetProperties()
-//		                        .setTitle("Template"))
-//		                .setFields("A2")));
-//		// Find and replace text.
-//		requests.add(new Request()
-//		        .setFindReplace(new FindReplaceRequest()
-//		                .setFind("12")
-//		                .setReplacement("22")
-//		                .setAllSheets(false)));
-//		// Add additional requests (operations) ...
-//
-//		BatchUpdateSpreadsheetRequest body =
-//		        new BatchUpdateSpreadsheetRequest().setRequests(requests);
-//		BatchUpdateSpreadsheetResponse response =
-//		        service.spreadsheets().batchUpdate(spreadsheetId, body).execute();
-//		FindReplaceResponse findReplaceResponse = response.getReplies().get(1).getFindReplace();
-//		System.out.printf("%d replacements made.", findReplaceResponse.getOccurrencesChanged());
-	    
-		/* http://stackoverflow.com/questions/38486286/write-data-into-google-spreadsheet-w-java 
-		 * http://stackoverflow.com/questions/39629260/insert-row-without-overwritting-data
-		 * */
-		List<Request> requests = new ArrayList<Request>();
-		List<CellData> values_Test_Result = new ArrayList<CellData>();
-		List<CellData> values_Test_Log = new ArrayList<CellData>();
-		List<CellData> start_Time_Col = new ArrayList<CellData>();
-		List<CellData> end_Time_Col = new ArrayList<CellData>();
-
-		int curIndex = index;
-		values_Test_Result.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(testStatus)));
-		requests.add(new Request().setUpdateCells(
-				new UpdateCellsRequest().setStart(new GridCoordinate()
-						.setSheetId(spreadsheetGid) //#gid=111111111111
-						.setRowIndex(curIndex)
-						.setColumnIndex(8))
-						.setRows(Arrays.asList(new RowData().setValues(values_Test_Result)))
-						.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
-		
-		values_Test_Log.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(errorLog)));
-		requests.add(new Request().setUpdateCells(
-				new UpdateCellsRequest().setStart(new GridCoordinate()
-						.setSheetId(spreadsheetGid) //#gid=1111111111111
-						.setRowIndex(curIndex)
-						.setColumnIndex(9))
-						.setRows(Arrays.asList(new RowData().setValues(values_Test_Log)))
-						.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
-		
-		start_Time_Col.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(start_time)));
-		requests.add(new Request().setUpdateCells(
-				new UpdateCellsRequest().setStart(new GridCoordinate()
-						.setSheetId(spreadsheetGid) //#gid=1111111111111
-						.setRowIndex(curIndex)
-						.setColumnIndex(10))
-						.setRows(Arrays.asList(new RowData().setValues(start_Time_Col)))
-						.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
-		
-		end_Time_Col.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(end_time)));
-		requests.add(new Request().setUpdateCells(
-				new UpdateCellsRequest().setStart(new GridCoordinate()
-						.setSheetId(spreadsheetGid) //#gid=1111111111111
-						.setRowIndex(curIndex)
-						.setColumnIndex(11))
-						.setRows(Arrays.asList(new RowData().setValues(end_Time_Col)))
-						.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
-
-		BatchUpdateSpreadsheetRequest batchUpdateRequest = new BatchUpdateSpreadsheetRequest().setRequests(requests);
-		service.spreadsheets().batchUpdate(spreadsheetId, batchUpdateRequest).execute();
-		
-		index++;
-	}
-	
-	/**
-	 * convert the milliseconds to time format
-	 * @param millis
-	 * @return
-	 */
-	public static String millisecondsToTime(long millis){
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");    
-		Date resultdate = new Date(millis);
-		return sdf.format(resultdate);
-	}
-	
-	private ValidatableResponse exectuteRequestMethod(DataDriverModel ddm, Response source, ValidatableResponse rs) {
-		try {
-			source.path("."); //check if the response is json format
-			return exectuteRequestMethodJson(ddm, source, rs);
-		} catch(com.jayway.restassured.path.json.exception.JsonPathException e){
-			System.out.println("** the response is not json format");
-			return exectuteRequestMethodText(ddm, source, rs);
-		} catch(IllegalStateException ex){
-			System.out.println("** the server response :"+ ex);
-			return exectuteRequestMethodText(ddm, source, rs);
-		}
-		/* TODO: xml */
-	}
-	
-	private ValidatableResponse exectuteRequestMethodJson(DataDriverModel ddm, Response source, ValidatableResponse rs) {
-		if(ddm.getAction().contains("status")){
-			return rs.statusCode(Integer.parseInt((String)ddm.getValidation()));
-		} else if (ddm.getAction().length() >= ".contains".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - ".contains".length()).equalsIgnoreCase(".contains")) {
-			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
-			System.out.println("jsonPath: "+jsonPath);
-			if(!(source.path(jsonPath) instanceof String)){
-				Assert.fail("Error, the 'contains' check only use for String type");
-			}
-			return rs.body(jsonPath, org.hamcrest.Matchers.containsString((String)ddm.getValidation()));
-		} else if (ddm.getAction().length() >= ".equalTo".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - ".equalTo".length()).equalsIgnoreCase(".equalTo")) {
-			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
-			System.out.println("jsonPath: "+jsonPath);
-			if(source.path(jsonPath) instanceof String){
-				return rs.body(jsonPath, equalTo((String)ddm.getValidation()));
-			} else if(source.path(jsonPath) instanceof Integer){
-				return rs.body(jsonPath, equalTo(Integer.parseInt((String)ddm.getValidation())));
-			} else if(source.path(jsonPath) instanceof Float){
-				return rs.body(jsonPath, equalTo(Float.parseFloat((String)ddm.getValidation())));
-			} else if(source.path(jsonPath) instanceof Boolean){
-				return rs.body(jsonPath, equalTo(Boolean.parseBoolean((String)ddm.getValidation())));
-			} else {
-				Assert.fail("Error, the 'equalTo' check only String, Integer or Float type");
-				return null;
-			}
-		} else if (ddm.getAction().length() >= ".isNull".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - ".isNull".length()).equalsIgnoreCase(".isNull")) {
-			String jsonPath = ddm.getAction().substring(ddm.getAction().indexOf("(\"")+2, ddm.getAction().indexOf("\")"));
-			System.out.println("jsonPath: "+jsonPath);
-			if(Boolean.parseBoolean((String)ddm.getValidation())){
-				Assert.assertNull(source.path(jsonPath));
-			} else if(((String)ddm.getValidation()).equalsIgnoreCase("false")){
-				Assert.assertNotNull(source.path(jsonPath));
-			} else {
-				Assert.fail("Error, the 'VALIDATION' should be either false or true where check 'isNull'");
-			}
-			return null;
-		} else {
-			return rs;
-		}
-	}
-	
-	private ValidatableResponse exectuteRequestMethodText(DataDriverModel ddm, Response source, ValidatableResponse rs) {
-		if(ddm.getAction().contains("status")){
-			return rs.statusCode(Integer.parseInt((String)ddm.getValidation()));
-		} else if (ddm.getAction().length() >= "contains".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - "contains".length()).equalsIgnoreCase("contains")) {
-			String responseString = source.asString();
-			Assert.assertTrue(responseString.indexOf((String)ddm.getValidation())!=-1);
-			return rs;
-		} else if (ddm.getAction().length() >= "equalTo".length() && ddm.getAction()
-				.substring(ddm.getAction().length() - "equalTo".length()).equalsIgnoreCase("equalTo")) {
-			String responseString = source.asString();
-			Assert.assertTrue(responseString.equalsIgnoreCase((String)ddm.getValidation()));
-			return rs;
-		} else if (ddm.getAction().length() >= "isNull".length()
-				&& ddm.getAction().substring(ddm.getAction().length() - "isNull".length()).equalsIgnoreCase("isNull")) {
-			String responseString = source.asString();
-			Assert.assertTrue(!responseString.trim().isEmpty());
-			return rs;
-		} else {
-			return rs;
-		}
+		SpreadSheetOperater.OutputSingleTestResult(result, spreadSheetConn);
 	}
 
 }

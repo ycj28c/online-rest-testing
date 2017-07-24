@@ -2,19 +2,15 @@ package google;
 
 import com.google.api.services.sheets.v4.Sheets;
 
-public class SpreadSheetProperties {
+public class SpreadSheetBulkProperties extends AbstractSpreadSheetProperties{
 
 	private Sheets service;
-	private String spreadsheetId;
 
 	private int test_case_spreadsheetGid;
 	private String test_case_range;
 	private String test_case_sheetname;
 
-	private int test_result_spreadsheetGid;
 	private int test_result_range_index;
-	private String test_result_range;
-	private String test_result_sheetname;
 
 	private int varible_spreadsheetGid;
 	private String varible_range;
@@ -29,14 +25,6 @@ public class SpreadSheetProperties {
 
 	public void setService(Sheets service) {
 		this.service = service;
-	}
-
-	public String getSpreadsheetId() {
-		return spreadsheetId;
-	}
-
-	public void setSpreadsheetId(String spreadsheetId) {
-		this.spreadsheetId = spreadsheetId;
 	}
 
 	public int getTest_case_spreadsheetGid() {
@@ -69,30 +57,6 @@ public class SpreadSheetProperties {
 
 	public void setTest_case_sheetname(String test_case_sheetname) {
 		this.test_case_sheetname = test_case_sheetname;
-	}
-
-	public int getTest_result_spreadsheetGid() {
-		return test_result_spreadsheetGid;
-	}
-
-	public void setTest_result_spreadsheetGid(int test_result_spreadsheetGid) {
-		this.test_result_spreadsheetGid = test_result_spreadsheetGid;
-	}
-
-	public String getTest_result_range() {
-		return test_result_range;
-	}
-
-	public void setTest_result_range(String test_result_range) {
-		this.test_result_range = test_result_range;
-	}
-
-	public String getTest_result_sheetname() {
-		return test_result_sheetname;
-	}
-
-	public void setTest_result_sheetname(String test_result_sheetname) {
-		this.test_result_sheetname = test_result_sheetname;
 	}
 
 	public int getVarible_spreadsheetGid() {

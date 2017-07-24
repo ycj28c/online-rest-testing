@@ -20,6 +20,15 @@ import util.TimeUtil;
 
 public class SpreadSheetOperater {
 
+	/**
+	 * insert the data into google spreadsheet cell format
+	 * @param celldatalist
+	 * @param requests
+	 * @param value
+	 * @param spreadSheetGid
+	 * @param rowIndex
+	 * @param colIndex
+	 */
 	private static void insertCellData(List<CellData> celldatalist, List<Request> requests, String value,
 			int spreadSheetGid, int rowIndex, int colIndex) {
 		celldatalist.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(value)));
@@ -29,9 +38,73 @@ public class SpreadSheetOperater {
 				.setRows(Arrays.asList(new RowData().setValues(celldatalist)))
 				.setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
 	}
+	
+	private static String getTestStatus(ITestResult result) {
+		String testStatus = null;
+		switch (result.getStatus()) {
+			case (ITestResult.FAILURE):
+				testStatus = "Failure";
+				break;
+			case (ITestResult.SKIP):
+				testStatus = "Skip";
+				break;
+			case (ITestResult.STARTED):
+				testStatus = "Started";
+				break;
+			case (ITestResult.SUCCESS):
+				testStatus = "Success";
+				break;
+			case (ITestResult.SUCCESS_PERCENTAGE_FAILURE):
+				testStatus = "Success_Percentage_Failure";
+				break;
+			default:
+				testStatus = "Null";
+				break;
+		}
+		return testStatus;
+	}
+	
+	public static void OutputSingleTestResult(ITestResult result, SpreadSheetSingleProperties spreadSheetConn) {
+		String errorLog = null;
+		String start_time = TimeUtil.millisecondsToTime(result.getStartMillis());
+		String end_time = TimeUtil.millisecondsToTime(result.getEndMillis());
+		try{
+			errorLog = result.getThrowable().getMessage();
+		}catch(Exception e){}
+		
+		String testStatus = getTestStatus(result);
+	    
+		/* http://stackoverflow.com/questions/38486286/write-data-into-google-spreadsheet-w-java 
+		 * http://stackoverflow.com/questions/39629260/insert-row-without-overwritting-data
+		 * */
+		List<Request> requests = new ArrayList<Request>();
+		List<CellData> values_Test_Result = new ArrayList<CellData>();
+		List<CellData> values_Test_Log = new ArrayList<CellData>();
+		List<CellData> start_Time_Col = new ArrayList<CellData>();
+		List<CellData> end_Time_Col = new ArrayList<CellData>();
+		
+		int curIndex = spreadSheetConn.getTest_result_range_index();
+		int test_result_spreadsheetGid = spreadSheetConn.getTest_result_spreadsheetGid();
+		int colIndex = 8;
 
-	public static void OutputTestResult(DataDriverModel ddm, ITestResult result,
-			SpreadSheetProperties spreadSheetConn) {
+		insertCellData(values_Test_Result, requests, testStatus, test_result_spreadsheetGid, curIndex, colIndex++);
+		insertCellData(values_Test_Log, requests, errorLog, test_result_spreadsheetGid, curIndex, colIndex++);
+		insertCellData(start_Time_Col, requests, start_time, test_result_spreadsheetGid, curIndex, colIndex++);
+		insertCellData(end_Time_Col, requests, end_time, test_result_spreadsheetGid, curIndex, colIndex++);
+
+		BatchUpdateSpreadsheetRequest batchUpdateRequest = new BatchUpdateSpreadsheetRequest().setRequests(requests);
+		try {
+			spreadSheetConn.getService().spreadsheets()
+					.batchUpdate(spreadSheetConn.getSpreadsheetId(), batchUpdateRequest).execute();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		spreadSheetConn.setTest_result_range_index(curIndex+1);
+	}
+
+	public static void OutputBulkTestResult(DataDriverModel ddm, ITestResult result,
+			SpreadSheetBulkProperties spreadSheetConn) {
 		String name_copy = ddm.getName();
 		String description_copy = ddm.getDescription();
 		String requestUrl_copy = ddm.getRequestUrl();
@@ -48,27 +121,7 @@ public class SpreadSheetOperater {
 		} catch (Exception e) {
 		}
 
-		String testStatus = null;
-		switch (result.getStatus()) {
-		case (ITestResult.FAILURE):
-			testStatus = "Failure";
-			break;
-		case (ITestResult.SKIP):
-			testStatus = "Skip";
-			break;
-		case (ITestResult.STARTED):
-			testStatus = "Started";
-			break;
-		case (ITestResult.SUCCESS):
-			testStatus = "Success";
-			break;
-		case (ITestResult.SUCCESS_PERCENTAGE_FAILURE):
-			testStatus = "Success_Percentage_Failure";
-			break;
-		default:
-			testStatus = "Null";
-			break;
-		}
+		String testStatus = getTestStatus(result);
 
 		/*
 		 * http://stackoverflow.com/questions/38486286/write-data-into-google-spreadsheet-w-java
@@ -118,4 +171,5 @@ public class SpreadSheetOperater {
 
 		spreadSheetConn.setTest_result_range_index(++curIndex);
 	}
+	
 }
