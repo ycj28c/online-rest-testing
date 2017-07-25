@@ -11,6 +11,7 @@ public class SpreadSheetBulkProperties extends AbstractSpreadSheetProperties{
 	private String test_case_sheetname;
 
 	private int test_result_range_index;
+	private int cursor = 1;
 
 	private int varible_spreadsheetGid;
 	private String varible_range;
@@ -49,6 +50,14 @@ public class SpreadSheetBulkProperties extends AbstractSpreadSheetProperties{
 
 	public void setTest_result_range_index(int test_result_range_index) {
 		this.test_result_range_index = test_result_range_index;
+	}
+	
+	public int getCursor() {
+		return cursor;
+	}
+
+	public void setCursor(int cursor) {
+		this.cursor = cursor;
 	}
 
 	public String getTest_case_sheetname() {
