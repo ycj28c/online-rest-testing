@@ -145,9 +145,10 @@ public class SpreadSheetOperater {
 		int curIndex = spreadSheetConn.getTest_result_range_index();
 		int test_result_spreadsheetGid = spreadSheetConn.getTest_result_spreadsheetGid();
 		int colIndex = 0;
+		int cursor = spreadSheetConn.getCursor();
 
 		// insert the cell data
-		insertCellData(index_cp, requests, String.valueOf(curIndex), test_result_spreadsheetGid, curIndex, colIndex++);
+		insertCellData(index_cp, requests, String.valueOf(cursor), test_result_spreadsheetGid, curIndex, colIndex++);
 		insertCellData(name_cp, requests, name_copy, test_result_spreadsheetGid, curIndex, colIndex++);
 		insertCellData(description_cp, requests, description_copy, test_result_spreadsheetGid, curIndex, colIndex++);
 		insertCellData(requestUrl_cp, requests, requestUrl_copy, test_result_spreadsheetGid, curIndex, colIndex++);
@@ -170,6 +171,7 @@ public class SpreadSheetOperater {
 		}
 
 		spreadSheetConn.setTest_result_range_index(++curIndex);
+		spreadSheetConn.setCursor(++cursor);
 	}
 	
 }
