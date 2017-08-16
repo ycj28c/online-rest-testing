@@ -95,29 +95,33 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 
 	@Test(dataProvider = "spreadSheetProvider")
 	public void testAPICalls(DataDriverModel ddm) {
-		System.out.println(ddm.getId() + "." + ddm.getName() + ":" + ddm.getDescription());
-		ValidatableResponse rs = null;
-		Response source = null;
-		
-		Boolean readOnly = env.getProperty("READ_ONLY", Boolean.class);
-		switch(ddm.getRequestMethod()){
-			case POST:
-				if(readOnly){
-					throw new SkipException("Skip Post Method in ReadOnly Mode");
-				}
-				/* post only support the json so far */
-				RequestSpecification rsf = given().body(ddm.getPayload()).contentType("application/json");
-				source = rsf.when().post(ddm.getRequestUrl());
-				break;
-			case GET:
-				source = when().get(ddm.getRequestUrl());
-				break;
-			default:
-				Assert.fail("Error, the RequestMethod '"+ddm.getRequestMethod()+"' is not supported");
-		}
+		try {
+			System.out.println(ddm.getId() + "." + ddm.getName() + ":" + ddm.getDescription());
+			ValidatableResponse rs = null;
+			Response source = null;
 
-		rs = source.then();
-		ApiRunner.exectuteRequestMethod(ddm, source, rs);
+			Boolean readOnly = env.getProperty("READ_ONLY", Boolean.class);
+			switch (ddm.getRequestMethod()) {
+				case POST:
+					if (readOnly) {
+						throw new SkipException("Skip Post Method in ReadOnly Mode");
+					}
+					/* post only support the json so far */
+					RequestSpecification rsf = given().body(ddm.getPayload()).contentType("application/json");
+					source = rsf.when().post(ddm.getRequestUrl());
+					break;
+				case GET:
+					source = when().get(ddm.getRequestUrl());
+					break;
+				default:
+					Assert.fail("Error, the RequestMethod '" + ddm.getRequestMethod() + "' is not supported");
+			}
+
+			rs = source.then();
+			ApiRunner.exectuteRequestMethod(ddm, source, rs);
+		} catch (Exception e) {
+			Assert.fail("Test fail", e);
+		}
 	}
 	
 	@AfterMethod
