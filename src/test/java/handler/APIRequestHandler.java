@@ -12,6 +12,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.ITestResult;
+import org.testng.SkipException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -98,8 +99,12 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 		ValidatableResponse rs = null;
 		Response source = null;
 		
+		Boolean readOnly = env.getProperty("READ_ONLY", Boolean.class);
 		switch(ddm.getRequestMethod()){
 			case POST:
+				if(readOnly){
+					throw new SkipException("Skip Post Method in ReadOnly Mode");
+				}
 				/* post only support the json so far */
 				RequestSpecification rsf = given().body(ddm.getPayload()).contentType("application/json");
 				source = rsf.when().post(ddm.getRequestUrl());
