@@ -1,5 +1,6 @@
 package handler;
 
+import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -25,6 +27,7 @@ import com.google.api.services.sheets.v4.model.ClearValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
+import com.jayway.restassured.specification.RequestSpecification;
 
 import api.ApiRunner;
 import config.CommonConfig;
@@ -116,7 +119,21 @@ public class APIRequestBulkHandler extends AbstractTestNGSpringContextTests{
 	public void testAPICalls(DataDriverModel ddm) {
 		System.out.println(ddm.getId() + "." + ddm.getName() + ":" + ddm.getDescription());
 		ValidatableResponse rs = null;
-		Response source = when().get(ddm.getRequestUrl());
+		Response source = null;
+		
+		switch(ddm.getRequestMethod()){
+			case POST:
+				/* post only support the json so far */
+				RequestSpecification rsf = given().body(ddm.getPayload()).contentType("application/json");
+				source = rsf.when().post(ddm.getRequestUrl());
+				break;
+			case GET:
+				source = when().get(ddm.getRequestUrl());
+				break;
+			default:
+				Assert.fail("Error, the RequestMethod '"+ddm.getRequestMethod()+"' is not supported");
+		}
+
 		rs = source.then();
 		ApiRunner.exectuteRequestMethod(ddm, source, rs);
 	}
