@@ -120,6 +120,10 @@ public class VariableParser {
 	    			new Object[] {}
 	    	);
 			
+			if(results == null || results.isEmpty()){
+				return list;
+			}
+			
 			String jsonStr = listmap_to_json_string(results);
 			
 			jsonStr = jsonStr.replaceAll(" ", "");
@@ -149,6 +153,8 @@ public class VariableParser {
 				String variableValue = (String)values.get(i).get(4);
 						
 				List<String> parameters = null;
+				
+				System.out.println("** generateVaribleMap ** processing variable: "+ variableValue);
 				switch(varibleType){
 					case "string":
 						parameters = parseStringVariable(variableValue);
