@@ -105,7 +105,7 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 				source = rsf.when().post(ddm.getRequestUrl());
 				break;
 			case GET:
-				source = when().post(ddm.getRequestUrl());
+				source = when().get(ddm.getRequestUrl());
 				break;
 			default:
 				Assert.fail("Error, the RequestMethod '"+ddm.getRequestMethod()+"' is not supported");
