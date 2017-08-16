@@ -1,5 +1,6 @@
 package handler;
 
+import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -21,6 +23,7 @@ import com.google.api.services.sheets.v4.model.ClearValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
+import com.jayway.restassured.specification.RequestSpecification;
 
 import api.ApiRunner;
 import config.CommonConfig;
@@ -29,6 +32,7 @@ import config.TestConfig;
 import google.SpreadSheetOperater;
 import google.SpreadSheetSingleProperties;
 import util.DataDriverModel;
+import util.RequestMethodUtil;
 
 @ContextConfiguration(classes = { TestConfig.class, CommonConfig.class, SpreadSheetSingleConfig.class  })
 @TestPropertySource(locations = { "classpath:spreadsheet-${spreadsheet:default}.properties" })
@@ -74,7 +78,9 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
         		ddm.setName((String)values.get(i).get(1));
         		ddm.setDescription((String)values.get(i).get(2));
         		ddm.setRequestUrl((String)values.get(i).get(3));
-        		ddm.setRequestMethod((String)values.get(i).get(4));
+        		
+        		String requestMethodStr = (String)values.get(i).get(4);
+        		ddm.setRequestMethod(RequestMethodUtil.convertRequetMethod(requestMethodStr));
         		ddm.setPayload((String)values.get(i).get(5));
         		ddm.setAction((String)values.get(i).get(6));
         		ddm.setValidation(values.get(i).get(7));
@@ -90,7 +96,21 @@ public class APIRequestHandler extends AbstractTestNGSpringContextTests{
 	public void testAPICalls(DataDriverModel ddm) {
 		System.out.println(ddm.getId() + "." + ddm.getName() + ":" + ddm.getDescription());
 		ValidatableResponse rs = null;
-		Response source = when().get(ddm.getRequestUrl());
+		Response source = null;
+		
+		switch(ddm.getRequestMethod()){
+			case POST:
+				/* post only support the json so far */
+				RequestSpecification rsf = given().body(ddm.getPayload()).contentType("application/json");
+				source = rsf.when().post(ddm.getRequestUrl());
+				break;
+			case GET:
+				source = when().post(ddm.getRequestUrl());
+				break;
+			default:
+				Assert.fail("Error, the RequestMethod '"+ddm.getRequestMethod()+"' is not supported");
+		}
+
 		rs = source.then();
 		ApiRunner.exectuteRequestMethod(ddm, source, rs);
 	}
