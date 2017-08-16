@@ -22,6 +22,7 @@ import config.CommonConfig;
 import config.TestConfig;
 import google.GoogleAPIService;
 import util.DataDriverModel;
+import util.RequestMethodUtil;
 
 @ContextConfiguration(classes = { TestConfig.class, CommonConfig.class })
 public class ZooGoogleDataProvider extends AbstractTestNGSpringContextTests{
@@ -59,7 +60,9 @@ public class ZooGoogleDataProvider extends AbstractTestNGSpringContextTests{
         		ddm.setName((String)values.get(i).get(1));
         		ddm.setDescription((String)values.get(i).get(2));
         		ddm.setRequestUrl((String)values.get(i).get(3));
-        		ddm.setRequestMethod((String)values.get(i).get(4));
+        		
+        		String requestMethodStr = (String)values.get(i).get(4);
+        		ddm.setRequestMethod(RequestMethodUtil.convertRequetMethod(requestMethodStr));
         		ddm.setPayload((String)values.get(i).get(5));
         		ddm.setAction((String)values.get(i).get(6));
         		ddm.setValidation((String)values.get(i).get(7));

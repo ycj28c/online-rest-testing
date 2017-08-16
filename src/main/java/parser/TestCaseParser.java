@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import util.DataDriverModel;
 import util.JSONUtils;
+import util.RequestMethodUtil;
 
 public class TestCaseParser {
 	
@@ -55,7 +56,7 @@ public class TestCaseParser {
 		initialDDM.setName((String)spreadsheetRowValues.get(1));
 		initialDDM.setDescription((String)spreadsheetRowValues.get(2));
 		initialDDM.setRequestUrl(requestUrl);
-		initialDDM.setRequestMethod(requestMethod);
+		initialDDM.setRequestMethod(RequestMethodUtil.convertRequetMethod(requestMethod));
 		initialDDM.setPayload(payload);
 		initialDDM.setAction(action);
 		initialDDM.setValidation(validation);
@@ -86,7 +87,8 @@ public class TestCaseParser {
 						//request URL
 						cloner.setRequestUrl(addressJSONVarible(cloner.getRequestUrl(), currentKey, parameters.get(j)));
 			    		//request method
-						cloner.setRequestMethod(addressJSONVarible(cloner.getRequestMethod(), currentKey, parameters.get(j)));
+						cloner.setRequestMethod(RequestMethodUtil.convertRequetMethod(addressJSONVarible(
+								cloner.getRequestMethod().getRequestMethod(), currentKey, parameters.get(j))));
 			    		//payLoad
 						cloner.setPayload(addressJSONVarible(cloner.getPayload(), currentKey, parameters.get(j)));
 			    		//action
@@ -102,7 +104,8 @@ public class TestCaseParser {
 						//request URL
 						cloner.setRequestUrl(addressVarible(cloner.getRequestUrl(), currentKey, parameters.get(j)));
 			    		//request method
-						cloner.setRequestMethod(addressVarible(cloner.getRequestMethod(), currentKey, parameters.get(j)));
+						cloner.setRequestMethod(RequestMethodUtil.convertRequetMethod(addressVarible(
+								cloner.getRequestMethod().getRequestMethod(), currentKey, parameters.get(j))));
 			    		//payLoad
 						cloner.setPayload(addressVarible(cloner.getPayload(), currentKey, parameters.get(j)));
 			    		//action

@@ -108,7 +108,7 @@ public class SpreadSheetOperater {
 		String name_copy = ddm.getName();
 		String description_copy = ddm.getDescription();
 		String requestUrl_copy = ddm.getRequestUrl();
-		String requestMethod_copy = ddm.getRequestMethod();
+		String requestMethod_copy = ddm.getRequestMethod().getRequestMethod();
 		String payload_copy = ddm.getPayload();
 		String action_copy = ddm.getAction();
 		String validation_copy = (String) ddm.getValidation();

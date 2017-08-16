@@ -1,5 +1,7 @@
 package util;
 
+import api.RequestMethod;
+
 public class DataDriverModel implements Cloneable {
 
 	@Override
@@ -21,7 +23,7 @@ public class DataDriverModel implements Cloneable {
 	public DataDriverModel() {
 	}
 
-	public DataDriverModel(String id, String name, String description, String requestUrl, String requestMethod,
+	public DataDriverModel(String id, String name, String description, String requestUrl, RequestMethod requestMethod,
 			String payload, String action, Object validation) {
 		super();
 		this.id = id;
@@ -66,11 +68,11 @@ public class DataDriverModel implements Cloneable {
 		this.requestUrl = requestUrl;
 	}
 
-	public String getRequestMethod() {
+	public RequestMethod getRequestMethod() {
 		return requestMethod;
 	}
 
-	public void setRequestMethod(String requestMethod) {
+	public void setRequestMethod(RequestMethod requestMethod) {
 		this.requestMethod = requestMethod;
 	}
 
@@ -102,7 +104,7 @@ public class DataDriverModel implements Cloneable {
 	String name;
 	String description;
 	String requestUrl;
-	String requestMethod;
+	RequestMethod requestMethod;
 	String payload;
 	String action;
 	Object validation;
