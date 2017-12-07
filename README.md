@@ -97,9 +97,9 @@ Write API Test
 
 | ID | NAME           | DESCRIPTION          | REQUEST_URL                   |REQUEST_METHOD| PAYLOAD | ACTION              | VALIDATION                   |
 |----|:--------------:|:--------------------:|:-----------------------------:|:------------:|:-------:|:-------------------:|:----------------------------:|
-| 1  |test get        |test zoos api get     |http://54.219.154.2:8080/zoos  |GET           |         | status              |200                           |
-| 2	 |test contains	  |test zoos api contains|http://54.219.154.2:8080/zoos/1|GET           |         |("1.name").contains  |Atascadero Charles Paddock Zoo|
-| 3	 |test equalTo	  |test zoos api equal	 |http://54.219.154.2:8080/zoos/2|GET           |         |("2.website").equalTo|bigbearzoo.org                |
+| 1  |test get        |test zoos api get     |http://54.219.129.91:9999/zoos  |GET           |         | status              |200                           |
+| 2	 |test contains	  |test zoos api contains|http://54.219.129.91:9999/zoos/1|GET           |         |("1.name").contains  |Atascadero Charles Paddock Zoo|
+| 3	 |test equalTo	  |test zoos api equal	 |http://54.219.129.91:9999/zoos/2|GET           |         |("2.website").equalTo|bigbearzoo.org                |
 
 + ID: the test id order
 + Name:           the test name
@@ -182,9 +182,9 @@ Example Bulk Google SpreadSheet Link: [Zoos API Google SpreadSheet Example Test 
 
 | ID | NAME           | DESCRIPTION          | REQUEST_URL                   |REQUEST_METHOD| PAYLOAD | ACTION              | VALIDATION                   |
 |----|:--------------:|:--------------------:|:-----------------------------:|:------------:|:-------:|:-------------------:|:----------------------------:|
-| 1  |test get        |test zoos api get     |http://54.219.154.2:8080/zoos  |GET           |         | status              |200                           |
-| 2	 |test contains	  |test zoos api contains|http://54.219.154.2:8080/zoos/{zooid}|GET           |         |("1.name").contains  |Atascadero Charles Paddock Zoo|
-| 3	 |test equalTo	  |test zoos api equal	 |http://54.219.154.2:8080/zoos/2/{animals.name}|GET           |         |("2.website").equalTo|bigbearzoo.org                |
+| 1  |test get        |test zoos api get     |http://54.219.129.91:9999/zoos  |GET           |         | status              |200                           |
+| 2	 |test contains	  |test zoos api contains|http://54.219.129.91:9999/zoos/{zooid}|GET           |         |("1.name").contains  |Atascadero Charles Paddock Zoo|
+| 3	 |test equalTo	  |test zoos api equal	 |http://54.219.129.91:9999/zoos/2/{animals.name}|GET           |         |("2.website").equalTo|bigbearzoo.org                |
 
 This part is to add the test cases, similar to the normal testing, the things different is we can injection the variable into the REQUEST_URL/REQUEST_METHOD/PAYLOAD/ACTION/VALIDATION.
 * If it is string variable, we can inject like {{string-name}}
