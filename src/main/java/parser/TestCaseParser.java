@@ -182,6 +182,7 @@ public class TestCaseParser {
 	private static List<String> validVariableKeys(HashMap<String, List<?>> variableMap, List<String>... rawVariables) {
 		System.out.println("validVariableKeys: generate valid variables");
 		List<String> result = new ArrayList<String>();
+		HashSet<String> hashResult = new HashSet<String>();
 		HashSet<String> hashedRawVariable = new HashSet<String>();
 		if (variableMap == null || variableMap.isEmpty() || rawVariables.length<1) {
 			return result;
@@ -207,9 +208,10 @@ public class TestCaseParser {
 				fixedVariableKey = fixedVariableKey.substring(0, fixedVariableKey.indexOf("."));
 			}
 			if(variableMap.containsKey(fixedVariableKey)){
-				result.add(variableKey);
+				hashResult.add(variableKey);
 			}
 		}
+		result.addAll(hashResult);
 //		System.out.println("result.size(): "+result.size());
 		return result;
 	}
