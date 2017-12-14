@@ -21,7 +21,6 @@ public class TestCaseParser {
 	 * @return
 	 * @throws CloneNotSupportedException 
 	 */
-	@SuppressWarnings("unchecked")
 	public static List<DataDriverModel> translateDataProviderParameter(List<Object> spreadsheetRowValues, HashMap<String, List<?>> variableMap) {
 		List<DataDriverModel> ddmList = new ArrayList<DataDriverModel>();
 		//only check the request_url, request_method, payload, action and validation column
@@ -63,62 +62,146 @@ public class TestCaseParser {
 //		System.out.println("initialDDM data:" + initialDDM.toString());
 		ddmList.add(initialDDM);
 		
-		// Iteration ddm for all variables 
-		//TODO limit maximum loop
+		HashSet<String> allUniqueParentKeys = new HashSet<String>();
+		HashMap<String, HashSet<String>> validKeyMapping = new HashMap<String, HashSet<String>>();
+		
+		/* according to the unique variable, find out the unique parent key */
 		for(int i=0;i<allUniqueVariableKeys.size();i++){
 			String currentKey = allUniqueVariableKeys.get(i);
 			
 			/* json format variable only use the root name as key */
-			List<String> parameters = null;
 			if(currentKey.contains(".")){
 				String rootVariableName = currentKey.substring(0, currentKey.indexOf("."));
-				parameters = (List<String>)variableMap.get(rootVariableName);
-			} else {
-				parameters = (List<String>)variableMap.get(currentKey);
-			}
-			
-			List<DataDriverModel> ddmTemp = new ArrayList<DataDriverModel>();
-			
-			for(int k=0;k<ddmList.size();k++){
-				for(int j=0;j<parameters.size();j++){
-					if(currentKey.contains(".")){ //if is json or query variable
-						DataDriverModel cloner = (DataDriverModel)ddmList.get(k).clone();
-						System.out.println("cloner.getRequestUrl():"+ cloner.getRequestUrl());
-						//request URL
-						cloner.setRequestUrl(addressJSONVarible(cloner.getRequestUrl(), currentKey, parameters.get(j)));
-			    		//request method
-						cloner.setRequestMethod(RequestMethodUtil.convertRequetMethod(addressJSONVarible(
-								cloner.getRequestMethod().getRequestMethod(), currentKey, parameters.get(j))));
-			    		//payLoad
-						cloner.setPayload(addressJSONVarible(cloner.getPayload(), currentKey, parameters.get(j)));
-			    		//action
-						cloner.setAction(addressJSONVarible(cloner.getAction(), currentKey, parameters.get(j)));
-			    		//validation
-			    		//TODO currently force string
-						cloner.setValidation(addressJSONVarible((String)cloner.getValidation(), currentKey, parameters.get(j)));
-						ddmTemp.add(cloner);
+				if(variableMap.containsKey(rootVariableName)){
+					allUniqueParentKeys.add(rootVariableName);
+					if(validKeyMapping.containsKey(rootVariableName)){
+						validKeyMapping.get(rootVariableName).add(currentKey);
 					} else {
-//						System.out.println("allUniqueVariableKeys.size(): "+allUniqueVariableKeys.size()+", parameters.size():"+ parameters.size() +", ddmTemp.size():"+ddmTemp.size());
-						DataDriverModel cloner = (DataDriverModel)ddmList.get(k).clone();
-						System.out.println("cloner.getRequestUrl():"+ cloner.getRequestUrl());
-						//request URL
-						cloner.setRequestUrl(addressVarible(cloner.getRequestUrl(), currentKey, parameters.get(j)));
-			    		//request method
-						cloner.setRequestMethod(RequestMethodUtil.convertRequetMethod(addressVarible(
-								cloner.getRequestMethod().getRequestMethod(), currentKey, parameters.get(j))));
-			    		//payLoad
-						cloner.setPayload(addressVarible(cloner.getPayload(), currentKey, parameters.get(j)));
-			    		//action
-						cloner.setAction(addressVarible(cloner.getAction(), currentKey, parameters.get(j)));
-			    		//validation
-			    		//TODO currently force string
-						cloner.setValidation(addressVarible((String)cloner.getValidation(), currentKey, parameters.get(j)));
+						HashSet<String> subkeys = new HashSet<String>();
+						subkeys.add(currentKey);
+						validKeyMapping.put(rootVariableName, subkeys);
+					}
+				}
+			} else {
+				if(variableMap.containsKey(currentKey)){
+					allUniqueParentKeys.add(currentKey);
+					if(validKeyMapping.containsKey(currentKey)){
+						validKeyMapping.get(currentKey).add(currentKey);
+					} else {
+						HashSet<String> subkeys = new HashSet<String>();
+						subkeys.add(currentKey);
+						validKeyMapping.put(currentKey, subkeys);
+					}
+				}
+			}
+		}
+		
+		/* loop for each parent key, each variable in parent key */
+		for(Iterator<String> iter = allUniqueParentKeys.iterator();iter.hasNext();){
+			String parentKey = (String) iter.next();
+			List<?> childKeys = variableMap.get(parentKey);
+			
+			HashSet<DataDriverModel> ddmTemp = new HashSet<DataDriverModel>();
+			for(int i =0;i<childKeys.size();i++){
+				for(int k =0;k<ddmList.size();k++){
+					DataDriverModel cloner = (DataDriverModel)ddmList.get(k).clone();
+					for (String validKey: validKeyMapping.get(parentKey)) {
+						if(validKey.contains(".")){ //if is json or query variable, mapping looks like {a:1111,b:2222}
+//							System.out.println("validKey:"+validKey+", (String)childKeys.get(i):"+(String)childKeys.get(i)+", childKeys:");
+							System.out.println("cloner.getRequestUrl():"+ cloner.getRequestUrl());
+							//request URL
+							//TODO currently force string
+							cloner.setRequestUrl(addressJSONVarible(cloner.getRequestUrl(), validKey, (String)childKeys.get(i))); 
+				    		//request method
+							cloner.setRequestMethod(RequestMethodUtil.convertRequetMethod(addressJSONVarible(
+									cloner.getRequestMethod().getRequestMethod(), validKey, (String)childKeys.get(i))));
+				    		//payLoad
+							cloner.setPayload(addressJSONVarible(cloner.getPayload(), validKey, (String)childKeys.get(i)));
+				    		//action
+							cloner.setAction(addressJSONVarible(cloner.getAction(), validKey, (String)childKeys.get(i)));
+				    		//validation
+							cloner.setValidation(addressJSONVarible((String)cloner.getValidation(), validKey, (String)childKeys.get(i)));
+						} else {
+//							System.out.println("111validKey:"+validKey+", (String)childKeys.get(i):"+(String)childKeys.get(i));
+							System.out.println("cloner.getRequestUrl():"+ cloner.getRequestUrl());
+							//request URL
+							cloner.setRequestUrl(addressVarible(cloner.getRequestUrl(), validKey, (String)childKeys.get(i)));
+				    		//request method
+							cloner.setRequestMethod(RequestMethodUtil.convertRequetMethod(addressVarible(
+									cloner.getRequestMethod().getRequestMethod(), validKey, (String)childKeys.get(i))));
+				    		//payLoad
+							cloner.setPayload(addressVarible(cloner.getPayload(), validKey, (String)childKeys.get(i)));
+				    		//action
+							cloner.setAction(addressVarible(cloner.getAction(), validKey, (String)childKeys.get(i)));
+				    		//validation
+							cloner.setValidation(addressVarible((String)cloner.getValidation(), validKey, (String)childKeys.get(i)));
+						}
 						ddmTemp.add(cloner);
 					}
 				}
 			}
-			ddmList = ddmTemp;
+			/* remove the duplicate test */
+			ddmList.clear();
+			ddmList.addAll(ddmTemp);
 		}
+		
+		// Iteration ddm for all variables 
+		//TODO limit maximum loop
+//		for(int i=0;i<allUniqueVariableKeys.size();i++){
+//			String currentKey = allUniqueVariableKeys.get(i);
+//			
+//			/* json format variable only use the root name as key */
+//			List<String> parameters = null;
+//			if(currentKey.contains(".")){
+//				String rootVariableName = currentKey.substring(0, currentKey.indexOf("."));
+//				parameters = (List<String>)variableMap.get(rootVariableName);
+//			} else {
+//				parameters = (List<String>)variableMap.get(currentKey);
+//			}
+//			
+//			List<DataDriverModel> ddmTemp = new ArrayList<DataDriverModel>();
+//			
+//			for(int k=0;k<ddmList.size();k++){
+//				for(int j=0;j<parameters.size();j++){
+//					if(currentKey.contains(".")){ //if is json or query variable
+//						System.out.println("currentKey:"+currentKey+", parameters.get(j):"+parameters.get(j));
+//						DataDriverModel cloner = (DataDriverModel)ddmList.get(k).clone();
+//						System.out.println("cloner.getRequestUrl():"+ cloner.getRequestUrl());
+//						//request URL
+//						cloner.setRequestUrl(addressJSONVarible(cloner.getRequestUrl(), currentKey, parameters.get(j)));
+//			    		//request method
+//						cloner.setRequestMethod(RequestMethodUtil.convertRequetMethod(addressJSONVarible(
+//								cloner.getRequestMethod().getRequestMethod(), currentKey, parameters.get(j))));
+//			    		//payLoad
+//						cloner.setPayload(addressJSONVarible(cloner.getPayload(), currentKey, parameters.get(j)));
+//			    		//action
+//						cloner.setAction(addressJSONVarible(cloner.getAction(), currentKey, parameters.get(j)));
+//			    		//validation
+//			    		//TODO currently force string
+//						cloner.setValidation(addressJSONVarible((String)cloner.getValidation(), currentKey, parameters.get(j)));
+//						ddmTemp.add(cloner);
+//					} else {
+////						System.out.println("allUniqueVariableKeys.size(): "+allUniqueVariableKeys.size()+", parameters.size():"+ parameters.size() +", ddmTemp.size():"+ddmTemp.size());
+//						DataDriverModel cloner = (DataDriverModel)ddmList.get(k).clone();
+//						System.out.println("cloner.getRequestUrl():"+ cloner.getRequestUrl());
+//						//request URL
+//						cloner.setRequestUrl(addressVarible(cloner.getRequestUrl(), currentKey, parameters.get(j)));
+//			    		//request method
+//						cloner.setRequestMethod(RequestMethodUtil.convertRequetMethod(addressVarible(
+//								cloner.getRequestMethod().getRequestMethod(), currentKey, parameters.get(j))));
+//			    		//payLoad
+//						cloner.setPayload(addressVarible(cloner.getPayload(), currentKey, parameters.get(j)));
+//			    		//action
+//						cloner.setAction(addressVarible(cloner.getAction(), currentKey, parameters.get(j)));
+//			    		//validation
+//			    		//TODO currently force string
+//						cloner.setValidation(addressVarible((String)cloner.getValidation(), currentKey, parameters.get(j)));
+//						ddmTemp.add(cloner);
+//					}
+//				}
+//			}
+//			ddmList = ddmTemp;
+//		}
 		
 		return ddmList;
 	}
@@ -182,7 +265,6 @@ public class TestCaseParser {
 	private static List<String> validVariableKeys(HashMap<String, List<?>> variableMap, List<String>... rawVariables) {
 		System.out.println("validVariableKeys: generate valid variables");
 		List<String> result = new ArrayList<String>();
-		HashSet<String> hashResult = new HashSet<String>();
 		HashSet<String> hashedRawVariable = new HashSet<String>();
 		if (variableMap == null || variableMap.isEmpty() || rawVariables.length<1) {
 			return result;
@@ -208,10 +290,9 @@ public class TestCaseParser {
 				fixedVariableKey = fixedVariableKey.substring(0, fixedVariableKey.indexOf("."));
 			}
 			if(variableMap.containsKey(fixedVariableKey)){
-				hashResult.add(variableKey);
+				result.add(variableKey);
 			}
 		}
-		result.addAll(hashResult);
 //		System.out.println("result.size(): "+result.size());
 		return result;
 	}
